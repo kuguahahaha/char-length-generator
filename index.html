@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>字符长度生成器 · 测试工程师工具</title>
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --border: #e3e8ef;
+    --text: #1f2937;
+    --text-2: #6b7280;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-light: #eff6ff;
+    --danger: #dc2626;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 24px 16px 60px;
+  }
+  .container { max-width: 1080px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 24px; }
+  header h1 { font-size: 24px; font-weight: 700; }
+  header p { color: var(--text-2); font-size: 13px; margin-top: 4px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h2 .tag {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--accent);
+    background: var(--accent-light);
+    border-radius: 4px;
+    padding: 1px 8px;
+  }
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: flex-end;
+    margin-bottom: 14px;
+  }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-2); }
+  select, input[type="number"], input[type="text"] {
+    font: inherit;
+    font-size: 14px;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--text);
+    outline: none;
+    transition: border-color .15s;
+  }
+  select:focus, input:focus { border-color: var(--accent); }
+  .btn {
+    font: inherit;
+    font-size: 14px;
+    padding: 7px 18px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-outline { background: #fff; border-color: var(--border); color: var(--text); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-sm { font-size: 12px; padding: 3px 10px; }
+  .btn-danger { color: var(--danger); }
+  .btn-danger:hover { border-color: var(--danger); color: var(--danger); }
+  .hidden { display: none !important; }
+
+  #charsetGroup { gap: 10px; align-items: center; }
+  #charsetGroup label {
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+
+  .result-box { position: relative; }
+  #result {
+    width: 100%;
+    min-height: 90px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 14px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    resize: vertical;
+    outline: none;
+    word-break: break-all;
+    white-space: pre-wrap;
+    background: #fbfcfe;
+  }
+  #result:focus { border-color: var(--accent); }
+  .stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 10px;
+    font-size: 13px;
+  }
+  .stats .stat {
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 6px;
+    padding: 3px 12px;
+    font-weight: 600;
+  }
+  .stats .stat.ok { background: #ecfdf5; color: #059669; }
+  .stats .stat.bad { background: #fef2f2; color: var(--danger); }
+  .result-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+
+  .boundary-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border);
+    align-items: center;
+  }
+  .boundary-bar .lbl { font-size: 12px; color: var(--text-2); margin-right: 4px; }
+
+  .history-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+  .history-toolbar input[type="text"] { flex: 1; min-width: 180px; }
+  .history-meta { font-size: 12px; color: var(--text-2); margin-left: auto; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th { color: var(--text-2); font-weight: 500; white-space: nowrap; background: #f8fafc; }
+  td.mono { font-family: Consolas, monospace; }
+  td.content-cell {
+    max-width: 380px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: Consolas, monospace;
+    cursor: default;
+  }
+  tr:hover td { background: #f8fafc; }
+  .row-actions { white-space: nowrap; }
+  .empty-tip { text-align: center; color: var(--text-2); padding: 28px 0; font-size: 13px; }
+
+  details.note { margin-top: 4px; font-size: 13px; color: var(--text-2); }
+  details.note summary { cursor: pointer; color: var(--accent); font-weight: 500; }
+  details.note ul { margin: 8px 0 0 20px; }
+  details.note li { margin-bottom: 4px; }
+
+  #toast {
+    position: fixed;
+    left: 50%;
+    bottom: 40px;
+    transform: translateX(-50%) translateY(20px);
+    background: #111827;
+    color: #fff;
+    font-size: 13px;
+    padding: 8px 20px;
+    border-radius: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all .25s;
+    z-index: 99;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  footer { text-align: center; font-size: 12px; color: var(--text-2); margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>字符长度生成器</h1>
+    <p>测试工程师专用 · 按类型精确生成指定长度/字节的测试数据 · 记录可搜索可导出</p>
+  </header>
+
+  <!-- ============ 生成器 ============ -->
+  <div class="card">
+    <h2>生成器 <span class="tag">支持 N / ANC / uInt / vchar(byte) / 日期 / 金额 / 自定义</span></h2>
+    <div class="form-row">
+      <div class="field">
+        <label>字符类型</label>
+        <select id="type">
+          <option value="vchar">vchar(n) byte（按字节）</option>
+          <option value="ANC">ANC（字母+数字+中文）</option>
+          <option value="N">N（纯数字，如 N11）</option>
+          <option value="uInt">uInt（无符号整数）</option>
+          <option value="date">日期（YYYYMMDD，固定 8 位）</option>
+          <option value="amount">金额（含 2 位小数）</option>
+          <option value="custom">自定义混合字符</option>
+        </select>
+      </div>
+      <div class="field">
+        <label id="lenLabel">长度（字节）</label>
+        <input type="number" id="length" min="0" max="65535" value="180" style="width:110px">
+      </div>
+      <div class="field" id="encField">
+        <label>字节口径</label>
+        <select id="encoding">
+          <option value="gbk">GBK（中文=2 字节，征信报文常用）</option>
+          <option value="utf8">UTF-8（中文=3 字节）</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>内容风格</label>
+        <select id="style">
+          <option value="pattern">可识别填充（带序号，易定位截断点）</option>
+          <option value="random">纯随机</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>&nbsp;</label>
+        <button class="btn btn-primary" id="genBtn">生 成</button>
+      </div>
+    </div>
+
+    <div class="form-row hidden" id="charsetGroup">
+      <label><input type="checkbox" id="csDigit" checked> 数字</label>
+      <label><input type="checkbox" id="csUpper" checked> 大写字母</label>
+      <label><input type="checkbox" id="csLower" checked> 小写字母</label>
+      <label><input type="checkbox" id="csCN" checked> 中文</label>
+      <label><input type="checkbox" id="csSpecial"> 特殊字符</label>
+    </div>
+
+    <div class="result-box">
+      <textarea id="result" spellcheck="false" placeholder="点击「生成」，结果会显示在这里。可直接编辑，下方统计实时更新。"></textarea>
+      <div class="stats">
+        <span class="stat" id="statChar">字符数：0</span>
+        <span class="stat" id="statGbk">GBK 字节：0</span>
+        <span class="stat" id="statUtf8">UTF-8 字节：0</span>
+        <span class="stat" id="statMatch"></span>
+      </div>
+      <div class="result-actions">
+        <button class="btn btn-primary" id="copyBtn">复制（纯文本·无尾部换行）</button>
+        <button class="btn btn-outline" id="saveBtn">保存到记录</button>
+      </div>
+    </div>
+
+    <div class="boundary-bar">
+      <span class="lbl">边界值快捷生成：</span>
+      <button class="btn btn-outline btn-sm" data-boundary="minus1">长度 -1</button>
+      <button class="btn btn-outline btn-sm" data-boundary="plus1">长度 +1</button>
+      <button class="btn btn-outline btn-sm" data-boundary="empty">空值</button>
+      <button class="btn btn-outline btn-sm" data-boundary="allCN">全中文</button>
+      <button class="btn btn-outline btn-sm" data-boundary="allEN">全英文</button>
+      <button class="btn btn-outline btn-sm" data-boundary="special">特殊字符</button>
+      <button class="btn btn-outline btn-sm" data-boundary="padSpace">首尾含空格</button>
+    </div>
+  </div>
+
+  <!-- ============ 历史记录 ============ -->
+  <div class="card">
+    <h2>历史记录 <span class="tag">本地存储 · 支持搜索 · 可导出 CSV</span></h2>
+    <div class="history-toolbar">
+      <input type="text" id="search" placeholder="搜索：类型 / 长度 / 内容关键字…">
+      <select id="filterType">
+        <option value="">全部类型</option>
+      </select>
+      <button class="btn btn-outline btn-sm" id="exportBtn">导出 CSV</button>
+      <button class="btn btn-outline btn-sm btn-danger" id="clearBtn">清空记录</button>
+      <span class="history-meta" id="historyMeta"></span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>时间</th>
+            <th>类型</th>
+            <th>要求</th>
+            <th>实际（字符/GBK字节/UTF8字节）</th>
+            <th>内容（点击行复制）</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+      <div class="empty-tip" id="emptyTip">暂无记录，点击「生成」后自动留痕</div>
+    </div>
+  </div>
+
+  <!-- ============ 使用说明 ============ -->
+  <div class="card">
+    <details class="note">
+      <summary>使用说明 & 关于"复制到 Excel 多一个空格"的说明</summary>
+      <ul>
+        <li><b>字节口径</b>：vchar(n) byte 按字节计算。GBK 下中文占 2 字节（人行征信报文常用），UTF-8 下占 3 字节，可在"字节口径"中切换。</li>
+        <li><b>复制无多余空格</b>：本工具复制走系统剪贴板纯文本接口，内容首尾不含空格、尾部不带换行，粘贴到 Excel 不会出现多一个空格/跳行的问题。</li>
+        <li><b>CSV 导出</b>：文件带 UTF-8 BOM（Excel 直接打开不乱码），所有字段用双引号包裹，避免 Excel 解析时吞改内容。</li>
+        <li><b>边界值</b>：长度±1、空值、全中文/全英文、特殊字符、首尾空格，是长度校验测试最常用的异常用例，可一键生成。</li>
+        <li><b>记录存储</b>：记录保存在浏览器 localStorage（最多 500 条，超出自动淘汰最旧），换电脑前请先导出 CSV 备份。</li>
+        <li><b>部署</b>：单文件零依赖，直接放到 GitHub 仓库开启 Pages 即可在线使用。</li>
+      </ul>
+    </details>
+  </div>
+
+  <footer>字符长度生成器 · 单文件版 · 数据仅保存在本地浏览器</footer>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ================= 基础工具 ================= */
+  var $ = function (id) { return document.getElementById(id); };
+
+  var CN_POOL = '的一是在不了有和人这中大为上个国我以要他时来用们生到作地于出就分对成会可主发年动同工也能下过子说产种面而方后多定行学法所民得经十三之进着等部度家电力里如水化高自二理起小物现实加量都两体制机当使点从业本去把性好应开它合还因由其些然前外天政四日那社义事平形相全表间样与关各重新线内数正心反你明看原又么利比或但质气第向道命此变条只没结解问意建月公无系军很情者最立代想已通并提直题党程展五果料象员革位入常文总次品式活设及管特件长求老头基资边流路级少图山统接知较将组见计别她手角期根论运农指几九区强放决西被干做必战先回则任取据处理世受什色称照管';
+  var SPECIAL_POOL = '~!@#$%^&*()_+-=[]{}|;:,.<>?/`￥【】、。，；：""\'《》？';
+  var DIGITS = '0123456789';
+  var UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  var LOWER = 'abcdefghijklmnopqrstuvwxyz';
+
+  function randInt(n) { return Math.floor(Math.random() * n); }
+  function pick(pool) { return pool[randInt(pool.length)]; }
+
+  function randFrom(pool, n) {
+    var s = '';
+    for (var i = 0; i < n; i++) s += pick(pool);
+    return s;
+  }
+
+  // GBK 口径字节数：ASCII 1 字节，其余按 2 字节（覆盖常用中文/全角符号）
+  function gbkBytes(s) {
+    var n = 0;
+    for (var i = 0; i < s.length; i++) {
+      n += (s.charCodeAt(i) <= 0x7F) ? 1 : 2;
+    }
+    return n;
+  }
+  function utf8Bytes(s) {
+    return new TextEncoder().encode(s).length;
+  }
+  function byteLen(s, enc) { return enc === 'utf8' ? utf8Bytes(s) : gbkBytes(s); }
+
+  function pad3(i) {
+    var s = String(i);
+    while (s.length < 3) s = '0' + s;
+    return s;
+  }
+
+  /* ================= 生成器核心 ================= */
+  // 可识别填充块：测A001 / 测B002 ……（截断位置一眼可见）
+  function patternChunk(i) {
+    return '测' + String.fromCharCode(65 + (i % 26)) + pad3(i);
+  }
+
+  // 按"字符数"填充
+  function fillChars(n, style, pool, usePattern) {
+    if (n <= 0) return '';
+    var s = '';
+    if (usePattern) {
+      var i = 0;
+      while (s.length < n) s += patternChunk(i++);
+      return s.slice(0, n);
+    }
+    if (style === 'random') return randFrom(pool, n);
+    // pattern 风格但无块（纯数字等）：循环易数序列 1234567890…
+    var seq = '1234567890';
+    while (s.length < n) s += seq;
+    return s.slice(0, n);
+  }
+
+  // 按"字节数"填充（vchar byte 专用）
+  function fillBytes(budget, enc, style, pool, usePattern) {
+    if (budget <= 0) return '';
+    var s = '', i = 0;
+    if (usePattern) {
+      while (true) {
+        var chunk = patternChunk(i++);
+        if (byteLen(s + chunk, enc) > budget) break;
+        s += chunk;
+      }
+    } else {
+      var guard = budget * 3 + 100;
+      while (guard-- > 0) {
+        var ch = pick(pool);
+        if (byteLen(s + ch, enc) > budget) break;
+        s += ch;
+      }
+    }
+    // 剩余字节用 ASCII 数字补齐（任何编码下都是 1 字节），保证精确等于 budget
+    var padSeq = '1234567890', k = 0;
+    while (byteLen(s, enc) < budget) s += padSeq[k++ % 10];
+    return s;
+  }
+
+  function genNormal(type, len, enc, style, opts) {
+    opts = opts || {};
+    switch (type) {
+      case 'N':
+        return style === 'random' ? randFrom(DIGITS, len) : fillChars(len, style, DIGITS, false);
+      case 'uInt':
+        if (len <= 0) return '';
+        var body = genNormal('N', len, enc, style);
+        if (body[0] === '0') body = '1' + body.slice(1);
+        return body;
+      case 'ANC':
+        return fillChars(len, style, CN_POOL + UPPER + LOWER + DIGITS, style === 'pattern');
+      case 'vchar':
+        return fillBytes(len, enc, style, CN_POOL + UPPER + LOWER + DIGITS, style === 'pattern');
+      case 'date': {
+        var d;
+        if (style === 'pattern') {
+          d = new Date(); // 可识别：当天日期
+        } else {
+          var start = new Date(1970, 0, 1).getTime();
+          d = new Date(start + Math.random() * (Date.now() - start));
+        }
+        var m = pad3(d.getMonth() + 1).slice(-2);
+        var day = pad3(d.getDate()).slice(-2);
+        return d.getFullYear() + m + day;
+      }
+      case 'amount': {
+        if (len < 4) return genNormal('uInt', len, enc, style);
+        var intLen = len - 3; // 1 位小数点 + 2 位小数
+        var intPart = genNormal('uInt', intLen, enc, style);
+        var dec = style === 'random' ? pad3(randInt(100)).slice(-2) : '00';
+        return intPart + '.' + dec;
+      }
+      case 'custom': {
+        var pool = '';
+        if (opts.digit) pool += DIGITS;
+        if (opts.upper) pool += UPPER;
+        if (opts.lower) pool += LOWER;
+        if (opts.cn) pool += CN_POOL;
+        if (opts.special) pool += SPECIAL_POOL;
+        if (!pool) return '';
+        return randFrom(pool, len);
+      }
+    }
+    return '';
+  }
+
+  /* ================= 界面状态 ================= */
+  var LS_RECORDS = 'clg_records_v1';
+  var LS_SETTINGS = 'clg_settings_v1';
+  var MAX_RECORDS = 500;
+
+  var TYPE_LABELS = {
+    vchar: 'vchar(n) byte',
+    ANC: 'ANC',
+    N: 'N（纯数字）',
+    uInt: 'uInt',
+    date: '日期 YYYYMMDD',
+    amount: '金额',
+    custom: '自定义混合'
+  };
+
+  function loadRecords() {
+    try { return JSON.parse(localStorage.getItem(LS_RECORDS)) || []; }
+    catch (e) { return []; }
+  }
+  function saveRecords(list) {
+    localStorage.setItem(LS_RECORDS, JSON.stringify(list.slice(0, MAX_RECORDS)));
+  }
+
+  function showToast(msg) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function () { t.classList.remove('show'); }, 1800);
+  }
+
+  function getOpts() {
+    return {
+      digit: $('csDigit').checked,
+      upper: $('csUpper').checked,
+      lower: $('csLower').checked,
+      cn: $('csCN').checked,
+      special: $('csSpecial').checked
+    };
+  }
+
+  function currentParams() {
+    return {
+      type: $('type').value,
+      len: Math.max(0, parseInt($('length').value, 10) || 0),
+      enc: $('encoding').value,
+      style: $('style').value
+    };
+  }
+
+  /* ================= 结果区与统计 ================= */
+  function updateStats() {
+    var s = $('result').value;
+    var c = s.length; // BMP 内字符数（生成池不含代理对字符）
+    var g = gbkBytes(s), u = utf8Bytes(s);
+    $('statChar').textContent = '字符数：' + c;
+    $('statGbk').textContent = 'GBK 字节：' + g;
+    $('statUtf8').textContent = 'UTF-8 字节：' + u;
+
+    var p = currentParams();
+    var m = $('statMatch');
+    if (!s && p.len === 0) { m.textContent = ''; m.className = 'stat'; return; }
+    if (p.type === 'vchar') {
+      var actual = p.enc === 'utf8' ? u : g;
+      var ok = actual === p.len;
+      m.textContent = ok ? '✓ 符合 ' + p.len + ' 字节要求' : '✗ 与要求 ' + p.len + ' 字节不符（差 ' + (actual - p.len) + '）';
+      m.className = 'stat ' + (ok ? 'ok' : 'bad');
+    } else if (p.type === 'date') {
+      m.textContent = c === 8 ? '✓ 8 位日期' : '✗ 非 8 位';
+      m.className = 'stat ' + (c === 8 ? 'ok' : 'bad');
+    } else {
+      var ok2 = c === p.len;
+      m.textContent = ok2 ? '✓ 符合长度 ' + p.len : '✗ 与要求长度 ' + p.len + ' 不符（差 ' + (c - p.len) + '）';
+      m.className = 'stat ' + (ok2 ? 'ok' : 'bad');
+    }
+  }
+
+  /* ================= 生成动作 ================= */
+  var lastNote = ''; // 记录附加说明（如"首尾含空格"）
+
+  function doGenerate(overrides, note) {
+    var p = currentParams();
+    var type = overrides.type || p.type;
+    var len = ('len' in overrides) ? overrides.len : p.len;
+    var enc = overrides.enc || p.enc;
+    var style = overrides.style || p.style;
+
+    var content;
+    if (overrides.mode === 'empty') {
+      content = '';
+    } else if (overrides.mode === 'allCN') {
+      content = type === 'vchar'
+        ? fillBytes(len, enc, 'random', CN_POOL, false)
+        : fillChars(len, 'random', CN_POOL, false);
+    } else if (overrides.mode === 'allEN') {
+      content = fillChars(len, 'random', UPPER + LOWER, false);
+    } else if (overrides.mode === 'special') {
+      content = fillChars(len, 'random', SPECIAL_POOL, false);
+    } else {
+      content = genNormal(type, len, enc, style, getOpts());
+    }
+    if (overrides.mode === 'padSpace') {
+      content = ' ' + genNormal(type, len, enc, style, getOpts()) + ' ';
+    }
+
+    $('result').value = content;
+    lastNote = note || '';
+    updateStats();
+    addRecord(type, len, enc, style, content, note || '');
+    return content;
+  }
+
+  /* ================= 复制（纯文本，无尾部换行） ================= */
+  function copyText(text, okMsg) {
+    function done() { showToast(okMsg || ('已复制 ' + text.length + ' 个字符')); }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done(); }
+      catch (e) { showToast('复制失败，请手动选择复制'); }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && window.isSecureContext !== false) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  /* ================= 历史记录 ================= */
+  function addRecord(type, len, enc, style, content, note) {
+    var list = loadRecords();
+    list.unshift({
+      id: Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+      time: new Date().toLocaleString('zh-CN', { hour12: false }),
+      type: type,
+      len: len,
+      enc: type === 'vchar' ? enc : '',
+      style: style,
+      note: note || '',
+      content: content
+    });
+    saveRecords(list);
+    renderHistory();
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function reqDesc(r) {
+    if (r.type === 'vchar') return r.len + ' 字节（' + (r.enc === 'utf8' ? 'UTF-8' : 'GBK') + '）';
+    if (r.type === 'date') return '固定 8 位';
+    return '长度 ' + r.len;
+  }
+
+  function renderHistory() {
+    var list = loadRecords();
+    var kw = $('search').value.trim().toLowerCase();
+    var ft = $('filterType').value;
+
+    var filtered = list.filter(function (r) {
+      if (ft && r.type !== ft) return false;
+      if (!kw) return true;
+      return (TYPE_LABELS[r.type] || '').toLowerCase().indexOf(kw) >= 0
+        || String(r.len).indexOf(kw) >= 0
+        || (r.content || '').toLowerCase().indexOf(kw) >= 0
+        || (r.note || '').toLowerCase().indexOf(kw) >= 0;
+    });
+
+    var body = $('historyBody');
+    body.innerHTML = filtered.map(function (r) {
+      var preview = r.content.length > 60 ? r.content.slice(0, 60) + '…' : r.content;
+      return '<tr data-id="' + r.id + '">'
+        + '<td style="white-space:nowrap">' + escapeHtml(r.time) + '</td>'
+        + '<td>' + escapeHtml(TYPE_LABELS[r.type] || r.type) + (r.note ? '<br><span style="color:#6b7280;font-size:11px">' + escapeHtml(r.note) + '</span>' : '') + '</td>'
+        + '<td class="mono">' + escapeHtml(reqDesc(r)) + '</td>'
+        + '<td class="mono">' + r.content.length + ' / ' + gbkBytes(r.content) + ' / ' + utf8Bytes(r.content) + '</td>'
+        + '<td class="content-cell" title="' + escapeHtml(r.content) + '">' + (r.content === '' ? '<i style="color:#9ca3af">（空值）</i>' : escapeHtml(preview)) + '</td>'
+        + '<td class="row-actions">'
+        + '<button class="btn btn-outline btn-sm act-copy">复制</button> '
+        + '<button class="btn btn-outline btn-sm btn-danger act-del">删除</button>'
+        + '</td></tr>';
+    }).join('');
+
+    $('emptyTip').style.display = filtered.length ? 'none' : 'block';
+    $('emptyTip').textContent = list.length ? '没有匹配的记录' : '暂无记录，点击「生成」后自动留痕';
+    $('historyMeta').textContent = '共 ' + list.length + ' 条' + (kw || ft ? '，匹配 ' + filtered.length + ' 条' : '');
+  }
+
+  /* ================= CSV 导出（BOM + 引号包裹，防 Excel 乱码/多空格） ================= */
+  function csvCell(v) {
+    return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  }
+  function exportCSV() {
+    var list = loadRecords();
+    if (!list.length) { showToast('暂无记录可导出'); return; }
+    var rows = [['时间', '类型', '要求', '附加说明', '字符数', 'GBK字节', 'UTF8字节', '内容'].map(csvCell).join(',')];
+    list.forEach(function (r) {
+      rows.push([
+        r.time, TYPE_LABELS[r.type] || r.type, reqDesc(r), r.note || '',
+        r.content.length, gbkBytes(r.content), utf8Bytes(r.content), r.content
+      ].map(csvCell).join(','));
+    });
+    var blob = new Blob(['﻿' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    var d = new Date();
+    var stamp = d.getFullYear() + pad3(d.getMonth() + 1).slice(-2) + pad3(d.getDate()).slice(-2)
+      + '_' + pad3(d.getHours()).slice(-2) + pad3(d.getMinutes()).slice(-2);
+    a.href = URL.createObjectURL(blob);
+    a.download = '字符长度生成记录_' + stamp + '.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast('已导出 ' + list.length + ' 条记录');
+  }
+
+  /* ================= 事件绑定 ================= */
+  function syncTypeUI() {
+    var t = $('type').value;
+    var isVchar = t === 'vchar';
+    var isDate = t === 'date';
+    $('encField').classList.toggle('hidden', !isVchar);
+    $('lenLabel').textContent = isVchar ? '长度（字节）' : '长度（字符）';
+    $('length').disabled = isDate;
+    if (isDate) $('length').value = 8;
+    $('charsetGroup').classList.toggle('hidden', t !== 'custom');
+    updateStats();
+  }
+
+  $('type').addEventListener('change', function () { syncTypeUI(); persistSettings(); });
+  $('encoding').addEventListener('change', function () { persistSettings(); updateStats(); });
+  $('style').addEventListener('change', function () { persistSettings(); });
+  $('length').addEventListener('input', updateStats);
+  $('result').addEventListener('input', updateStats);
+
+  $('genBtn').addEventListener('click', function () { doGenerate({}, ''); });
+  $('copyBtn').addEventListener('click', function () {
+    var s = $('result').value;
+    if (!s) { showToast('结果为空，请先生成'); return; }
+    copyText(s);
+  });
+  $('saveBtn').addEventListener('click', function () {
+    var p = currentParams();
+    addRecord(p.type, p.len, p.enc, p.style, $('result').value, lastNote ? lastNote + '（手动保存）' : '手动保存');
+    showToast('已保存到记录');
+  });
+
+  document.querySelectorAll('[data-boundary]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var mode = btn.getAttribute('data-boundary');
+      var p = currentParams();
+      var label = btn.textContent.trim();
+      if (mode === 'minus1') doGenerate({ len: Math.max(0, p.len - 1) }, '边界：长度-1（目标 ' + Math.max(0, p.len - 1) + '）');
+      else if (mode === 'plus1') doGenerate({ len: p.len + 1 }, '边界：长度+1（目标 ' + (p.len + 1) + '）');
+      else if (mode === 'empty') doGenerate({ mode: 'empty' }, '边界：空值');
+      else if (mode === 'allCN') doGenerate({ mode: 'allCN' }, '边界：全中文');
+      else if (mode === 'allEN') doGenerate({ mode: 'allEN' }, '边界：全英文');
+      else if (mode === 'special') doGenerate({ mode: 'special' }, '边界：特殊字符');
+      else if (mode === 'padSpace') doGenerate({ mode: 'padSpace' }, '边界：首尾含空格');
+    });
+  });
+
+  $('search').addEventListener('input', renderHistory);
+  $('filterType').addEventListener('change', renderHistory);
+  $('exportBtn').addEventListener('click', exportCSV);
+  $('clearBtn').addEventListener('click', function () {
+    if (!loadRecords().length) { showToast('记录已为空'); return; }
+    if (confirm('确定清空全部历史记录？此操作不可恢复，建议先导出 CSV 备份。')) {
+      saveRecords([]);
+      renderHistory();
+      showToast('已清空记录');
+    }
+  });
+
+  $('historyBody').addEventListener('click', function (e) {
+    var tr = e.target.closest('tr');
+    if (!tr) return;
+    var id = tr.getAttribute('data-id');
+    var rec = loadRecords().find(function (r) { return r.id === id; });
+    if (!rec) return;
+    if (e.target.classList.contains('act-del')) {
+      saveRecords(loadRecords().filter(function (r) { return r.id !== id; }));
+      renderHistory();
+      showToast('已删除');
+    } else {
+      // 点击行任意位置（除删除键）即复制内容
+      copyText(rec.content, '已复制该条记录（' + rec.content.length + ' 字符）');
+    }
+  });
+
+  /* ================= 设置持久化 ================= */
+  function persistSettings() {
+    var s = currentParams();
+    localStorage.setItem(LS_SETTINGS, JSON.stringify(s));
+  }
+  function restoreSettings() {
+    try {
+      var s = JSON.parse(localStorage.getItem(LS_SETTINGS));
+      if (!s) return;
+      if (s.type && TYPE_LABELS[s.type]) $('type').value = s.type;
+      if (s.enc) $('encoding').value = s.enc;
+      if (s.style) $('style').value = s.style;
+      if (typeof s.len === 'number') $('length').value = s.len;
+    } catch (e) { /* ignore */ }
+  }
+
+  /* ================= 初始化 ================= */
+  (function init() {
+    // 类型过滤下拉
+    Object.keys(TYPE_LABELS).forEach(function (k) {
+      var o = document.createElement('option');
+      o.value = k;
+      o.textContent = TYPE_LABELS[k];
+      $('filterType').appendChild(o);
+    });
+    restoreSettings();
+    syncTypeUI();
+    renderHistory();
+  })();
+})();
+</script>
+</body>
+</html>
