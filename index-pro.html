@@ -1,0 +1,2282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>字符长度生成器 v1.0</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#ffffff; --line:#e3e6eb; --line2:#d0d5dd;
+  --tx:#1f2329; --tx2:#5f6672; --tx3:#8b929e;
+  --pri:#2563eb; --pri-bg:#eff4ff;
+  --ok:#1a7f4b; --bad:#c62828;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB",-apple-system,"Segoe UI",sans-serif;
+  background:var(--bg);color:var(--tx);font-size:14px;line-height:1.6;
+  padding-bottom:60px;
+}
+.app{max-width:1440px;margin:0 auto;padding:16px 20px}
+
+/* ---------- topbar ---------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:14px 18px;margin-bottom:14px;border-left:5px solid var(--pri);
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{
+  width:40px;height:40px;border-radius:10px;background:var(--pri);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px;letter-spacing:.5px;
+}
+.topbar h1{font-size:17px;font-weight:600;line-height:1.3}
+.sub{font-size:12px;color:var(--tx3);line-height:1.4}
+.topActions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.usage{font-size:12px;color:var(--tx2);border:1px solid var(--line);border-radius:8px;padding:5px 10px;background:#fafbfc}
+.usage b{color:var(--tx);font-weight:600}
+.bar{display:inline-block;width:70px;height:6px;background:#eceff3;border-radius:3px;overflow:hidden;vertical-align:middle;margin-left:6px}
+.bar > i{display:block;height:100%;background:var(--pri);width:0%}
+
+/* ---------- buttons / inputs ---------- */
+button{
+  font-family:inherit;font-size:13px;padding:7px 14px;border-radius:8px;
+  border:1px solid var(--line2);background:#fff;color:var(--tx);cursor:pointer;line-height:1.4;
+}
+button:hover{background:#f2f4f7}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--pri);border-color:var(--pri);color:#fff}
+button.primary:hover{background:#1d4ed8}
+button.danger{color:var(--bad);border-color:#f0c2c2}
+button.danger:hover{background:#fdf2f2}
+button.sm{padding:4px 9px;font-size:12px}
+button.link{border:none;background:none;color:var(--pri);padding:2px 4px;font-size:12px}
+button.link:hover{background:none;text-decoration:underline}
+input,select,textarea{
+  font-family:inherit;font-size:13px;color:var(--tx);
+  border:1px solid var(--line2);border-radius:8px;padding:7px 10px;background:#fff;outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+select{cursor:pointer}
+textarea{resize:vertical;line-height:1.5}
+
+/* ---------- cards ---------- */
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  margin-bottom:14px;overflow:hidden;
+}
+.cardHead{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:12px 18px;border-bottom:1px solid var(--line);background:#fbfcfd;
+}
+.cardHead h2{font-size:15px;font-weight:600;display:flex;align-items:center;gap:9px}
+.cardBody{padding:16px 18px}
+.cardBody.tight{padding:12px 18px}
+
+.tabs{display:flex;gap:4px;background:#eef1f5;border-radius:9px;padding:3px}
+.tab{border:none;background:none;padding:5px 13px;border-radius:7px;font-size:13px;color:var(--tx2)}
+.tab.active{background:#fff;color:var(--tx);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.tabPane.hidden{display:none}
+
+/* ---------- tags ---------- */
+.tag{display:inline-flex;align-items:center;height:21px;padding:0 8px;border-radius:5px;
+  font-size:12px;font-weight:600;border:1px solid;white-space:nowrap;letter-spacing:.2px}
+.tag-num{width:22px;height:22px;border-radius:6px;justify-content:center;padding:0;font-size:13px}
+.tag-blue{background:#E6F1FB;color:#0C447C;border-color:#B5D4F4}
+.tag-green{background:#EAF3DE;color:#27500A;border-color:#C0DD97}
+.tag-purple{background:#EEEDFE;color:#3C3489;border-color:#CECBF6}
+.tag-teal{background:#E1F5EE;color:#085041;border-color:#9FE1CB}
+.tag-amber{background:#FAEEDA;color:#633806;border-color:#FAC775}
+.tag-coral{background:#FAECE7;color:#712B13;border-color:#F5C4B3}
+.tag-pink{background:#FBEAF0;color:#72243E;border-color:#F4C0D1}
+.tag-red{background:#FCEBEB;color:#791F1F;border-color:#F7C1C1}
+.tag-gray{background:#F1EFE8;color:#444441;border-color:#D3D1C7}
+
+/* ---------- form grid ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field > label{font-size:12px;color:var(--tx2);font-weight:600}
+.field .hint{font-size:11px;color:var(--tx3);font-weight:400}
+.full{grid-column:1/-1}
+
+.pasteRow{display:flex;gap:10px;align-items:flex-start;margin-bottom:14px;
+  border:1px dashed var(--line2);border-radius:10px;padding:12px;background:#fcfdff}
+.pasteRow textarea{flex:1;min-height:58px}
+.pasteSide{display:flex;flex-direction:column;gap:6px;width:130px;flex-shrink:0}
+
+.parseBox{font-size:12px;border-radius:8px;padding:9px 12px;margin-bottom:12px;display:none;line-height:1.7}
+.parseBox.show{display:block}
+.parseBox.ok{background:#E1F5EE;border:1px solid #9FE1CB;color:#085041}
+.parseBox.warn{background:#FAEEDA;border:1px solid #FAC775;color:#633806}
+.parseBox.err{background:#FCEBEB;border:1px solid #F7C1C1;color:#791F1F}
+.parseBox b{font-weight:600}
+
+/* ---------- result ---------- */
+.result{border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:14px;background:#fcfdff;display:none}
+.result.show{display:block}
+.resultHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px;flex-wrap:wrap}
+.resultHead h3{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.valBox{
+  font-family:Consolas,"Courier New",monospace;font-size:13px;line-height:1.7;
+  background:#fff;border:1px solid var(--line2);border-radius:8px;padding:11px 13px;
+  white-space:pre-wrap;word-break:break-all;max-height:220px;overflow:auto;user-select:all;
+}
+.stats{display:flex;gap:9px;flex-wrap:wrap;margin-top:11px}
+.stat{background:#fff;border:1px solid var(--line2);border-radius:8px;padding:7px 12px;min-width:104px}
+.stat .k{font-size:11px;color:var(--tx3);display:block}
+.stat .v{font-size:17px;font-weight:600;font-family:Consolas,monospace}
+.stat.pass .v{color:var(--ok)}
+.stat.fail .v{color:var(--bad)}
+.verdict{margin-top:11px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* ---------- filters ---------- */
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;padding:12px 18px;border-bottom:1px solid var(--line)}
+.filters .field{min-width:120px}
+.filters .grow{flex:1;min-width:210px}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;padding:10px 18px;border-bottom:1px solid var(--line);background:#fbfcfd}
+.toolbar .spacer{flex:1}
+.selInfo{font-size:12px;color:var(--tx2)}
+.selInfo b{color:var(--pri);font-weight:600}
+
+/* ---------- table ---------- */
+.tableWrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:1080px}
+th,td{border-bottom:1px solid #eef0f3;padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#fafbfc;font-size:12px;color:var(--tx2);font-weight:600;white-space:nowrap;position:sticky;top:0}
+tbody tr:hover{background:#fafbff}
+td.mono{font-family:Consolas,"Courier New",monospace;font-size:12px;white-space:pre-wrap;word-break:break-all;max-width:330px}
+td.dim{color:var(--tx3)}
+.nums{font-family:Consolas,monospace;font-size:12px;white-space:nowrap;line-height:1.5}
+.nums .n{display:block}
+.nums .c{color:var(--tx2)}
+.nums .u{color:#7a5cc6}
+.nums .g{color:#b06a00}
+.ops{white-space:nowrap}
+.empty{padding:40px 18px;text-align:center;color:var(--tx3);font-size:13px}
+mark{background:#ffe58f;color:#5c3d00;border-radius:2px;padding:0 1px}
+.pager{display:flex;gap:6px;align-items:center;justify-content:flex-end;padding:11px 18px;flex-wrap:wrap}
+.pager .pg{min-width:32px;padding:4px 8px}
+.pager .pg.on{background:var(--pri);border-color:var(--pri);color:#fff}
+
+/* ---------- modal ---------- */
+.mask{position:fixed;inset:0;background:rgba(20,24,31,.45);display:none;z-index:50}
+.mask.show{display:block}
+.modal{position:fixed;top:40px;left:50%;transform:translateX(-50%);width:min(1100px,94vw);
+  background:#fff;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.22);display:none;z-index:51;
+  max-height:calc(100vh - 80px);flex-direction:column}
+.modal.show{display:flex}
+.modal.narrow{width:min(560px,94vw)}
+.modalHead{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+.modalHead h3{font-size:15px;font-weight:600}
+.modalBody{padding:18px 20px;overflow:auto}
+.modalFoot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 20px;border-top:1px solid var(--line);background:#fbfcfd;flex-wrap:wrap}
+.modalFoot .btns{display:flex;gap:8px;flex-wrap:wrap}
+.x{border:none;background:none;font-size:20px;line-height:1;color:var(--tx3);padding:2px 6px}
+.x:hover{color:var(--tx);background:none}
+
+.exportGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.exportGrid h4{font-size:13px;font-weight:600;margin-bottom:9px;color:var(--tx2)}
+.checkList{display:grid;grid-template-columns:1fr 1fr;gap:5px;max-height:300px;overflow:auto;padding-right:4px}
+.checkList label,.optList label{display:flex;align-items:center;gap:7px;font-size:13px;padding:4px 5px;border-radius:6px;cursor:pointer}
+.checkList label:hover,.optList label:hover{background:#f4f6f9}
+.optList{display:flex;flex-direction:column;gap:2px}
+.fmtList{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.fmtList label{display:flex;align-items:flex-start;gap:8px;font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.fmtList label.on{border-color:var(--pri);background:var(--pri-bg)}
+.fmtList .d{font-size:11px;color:var(--tx3);display:block;font-weight:400}
+pre.preview{background:#f7f8fa;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:11px;
+  font-family:Consolas,monospace;white-space:pre;overflow:auto;max-height:230px;line-height:1.55}
+.audit{margin-top:10px;font-size:12px}
+.audit .ok{background:#E1F5EE;border:1px solid #9FE1CB;color:#085041;padding:8px 10px;border-radius:8px}
+.audit .bad{background:#FCEBEB;border:1px solid #F7C1C1;color:#791F1F;padding:8px 10px;border-radius:8px;max-height:150px;overflow:auto}
+.note{font-size:12px;color:var(--tx3);line-height:1.7;margin-top:8px}
+.note.warn{color:#8a5a00;background:#FAEEDA;border:1px solid #FAC775;border-radius:8px;padding:8px 10px}
+.note.info{color:#0C447C;background:#E6F1FB;border:1px solid #B5D4F4;border-radius:8px;padding:8px 10px}
+hr.sep{border:none;border-top:1px solid var(--line);margin:14px 0}
+
+.setRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #f0f2f5}
+.setRow:last-child{border-bottom:none}
+.setRow .l{font-size:13px;font-weight:600}
+.setRow .d{font-size:11px;color:var(--tx3);font-weight:400;display:block}
+
+/* ---------- 批量导入 ---------- */
+.bOpt{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+.bOpt .field{min-width:148px}
+.bOpt .grow{flex:1;min-width:210px}
+.bdList{display:flex;gap:5px;flex-wrap:wrap}
+.bdList label{display:flex;align-items:center;gap:5px;font-size:12px;border:1px solid var(--line);border-radius:7px;padding:5px 10px;cursor:pointer;background:#fff;white-space:nowrap}
+.bdList label:hover{background:#f4f6f9}
+.batchBar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.batchBar .spacer{flex:1}
+.batchWrap{max-height:400px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.batchWrap table{min-width:860px}
+.batchWrap td{padding:6px 9px}
+input.bLen{width:74px;padding:3px 6px;font-size:12px;font-family:Consolas,monospace}
+
+/* ---------- toast ---------- */
+#toasts{position:fixed;top:16px;right:16px;z-index:99;display:flex;flex-direction:column;gap:8px}
+.toast{background:#fff;border:1px solid var(--line);border-left:4px solid var(--pri);border-radius:9px;
+  padding:10px 15px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:420px;line-height:1.5}
+.toast.ok{border-left-color:#1a7f4b}
+.toast.bad{border-left-color:#c62828}
+.toast.warn{border-left-color:#BA7517}
+
+footer{text-align:center;font-size:12px;color:var(--tx3);padding:16px 0 0;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">CL</div>
+      <div>
+        <h1>字符长度生成器 <span class="tag tag-blue">v1.1</span></h1>
+        <p class="sub">按规范「长度要求」一键生成卡边界的测试数据 · 支持整表批量导入 · 全部数据保存在本机浏览器</p>
+      </div>
+    </div>
+    <div class="topActions">
+      <div class="usage" id="usageBox"></div>
+      <button id="btnSettings">设置</button>
+      <button id="btnBackup" class="danger">数据备份</button>
+      <button id="btnExportCenter" class="primary">导出中心</button>
+    </div>
+  </header>
+
+  <!-- ============ 1 生成器 ============ -->
+  <section class="card">
+    <div class="cardHead">
+      <h2><span class="tag tag-blue tag-num">1</span> 生成器</h2>
+      <div class="tabs">
+        <button class="tab active" data-tab="single">单条生成</button>
+        <button class="tab" data-tab="batch">批量粘贴整表 <span class="tag tag-green">new</span></button>
+      </div>
+    </div>
+
+    <div class="cardBody" data-pane="single">
+
+      <div class="pasteRow">
+        <textarea id="specPaste" placeholder="智能粘贴：直接贴规范里的「长度要求」，例如  vchar（180）byte&#10;也可以贴一整行（Tab 或 | 分隔）：信息类型 | 细分 | 数据项名称 | 长度要求"></textarea>
+        <div class="pasteSide">
+          <button class="primary" id="btnParse">识别并填入</button>
+          <button id="btnPasteClear">清空</button>
+        </div>
+      </div>
+      <div class="parseBox" id="parseMsg"></div>
+
+      <div class="grid">
+        <div class="field">
+          <label>字符类型 <span class="hint">下拉选择</span></label>
+          <select id="fType">
+            <option value="VARCHAR">VARCHAR · 变长字符串</option>
+            <option value="CHAR">CHAR · 定长字符串</option>
+            <option value="C">C · 字符型</option>
+            <option value="N" selected>N · 数字型</option>
+            <option value="AN">AN · 字母型</option>
+            <option value="ANC">ANC · 字母数字型</option>
+            <option value="UINT">uInt · 无符号整数</option>
+            <option value="INT">Int · 整数</option>
+            <option value="DECIMAL">Decimal · 定点数值</option>
+            <option value="DATE">Date · 日期</option>
+            <option value="NONE">无长度要求（--）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>长度 <span class="hint">规范中的数字</span></label>
+          <input id="fLength" type="number" min="0" max="100000" value="11">
+        </div>
+        <div class="field">
+          <label>长度模式</label>
+          <select id="fMode">
+            <option value="fixed">固定长度（正好 N）</option>
+            <option value="max" selected>上限长度（最多 N，可变）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>长度口径 <span class="hint">默认按字符数</span></label>
+          <select id="fUnit">
+            <option value="char" selected>按字符数</option>
+            <option value="utf8">按字节 · UTF-8</option>
+            <option value="gbk">按字节 · GBK</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>字符集</label>
+          <select id="fCharset">
+            <option value="digit">纯数字 0-9</option>
+            <option value="lower">小写字母 a-z</option>
+            <option value="upper">大写字母 A-Z</option>
+            <option value="alpha">字母（大小写混合）</option>
+            <option value="alnum">字母 + 数字</option>
+            <option value="cn" selected>纯中文汉字</option>
+            <option value="mixcn">中英数字混合</option>
+            <option value="fullwidth">全角字符</option>
+            <option value="special">特殊符号</option>
+            <option value="emoji">Emoji（4 字节）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>取值形态 <span class="hint">边界用例</span></label>
+          <select id="fBoundary">
+            <option value="max" selected>最大长度（卡上限）</option>
+            <option value="maxPlus1">最大长度 +1（超长负向）</option>
+            <option value="maxMinus1">最大长度 -1</option>
+            <option value="min">最小长度 1</option>
+            <option value="random">随机长度（1 ~ 上限）</option>
+            <option value="zero">全 0</option>
+            <option value="maxValue">全 9（最大值）</option>
+            <option value="spaces">纯空格串</option>
+            <option value="empty">空字符串</option>
+            <option value="nullval">NULL</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>语义模板 <span class="hint">生成"像真的"数据</span></label>
+          <select id="fTemplate">
+            <option value="auto" selected>自动匹配（按数据项名称）</option>
+            <option value="none">不使用 · 纯随机字符</option>
+            <option value="phone">手机号码</option>
+            <option value="amount">金额</option>
+            <option value="date">日期 YYYYMMDD</option>
+            <option value="orgName">机构名称</option>
+            <option value="address">居住 / 通讯地址</option>
+            <option value="idcard">身份证号</option>
+            <option value="email">邮箱</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>信息类型 <span class="hint">选填，便于导出成用例</span></label>
+          <input id="fCategory" placeholder="如：个人基本信息">
+        </div>
+        <div class="field">
+          <label>信息类型细分 <span class="hint">选填</span></label>
+          <input id="fSubCategory" placeholder="如：身份信息">
+        </div>
+        <div class="field full">
+          <label>数据项名称 <span class="hint">选填，用于自动匹配语义模板</span></label>
+          <input id="fFieldName" placeholder="如：手机号码">
+        </div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;gap:9px;align-items:center;flex-wrap:wrap">
+        <button class="primary" id="btnGen">生成测试数据</button>
+        <button id="btnGenAgain">换一个</button>
+        <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="fAutoRecord" checked> 生成后自动存入记录
+        </label>
+        <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="fShowInvisible"> 显示不可见字符
+        </label>
+      </div>
+
+      <div class="result" id="resultBox">
+        <div class="resultHead">
+          <h3><span class="tag tag-green">生成结果</span> <span id="resLabel" style="font-weight:400;color:var(--tx2)"></span></h3>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <button class="sm" id="btnCopyValue">复制值</button>
+            <button class="sm" id="btnCopyRow">复制整行(TSV)</button>
+            <button class="sm" id="btnSaveRecord">存入记录</button>
+          </div>
+        </div>
+        <div class="valBox" id="resValue"></div>
+        <div class="stats" id="resStats"></div>
+        <div class="verdict" id="resVerdict"></div>
+      </div>
+    </div>
+
+    <div class="cardBody hidden tabPane" data-pane="batch">
+
+      <div class="pasteRow">
+        <textarea id="bPaste" style="min-height:118px" placeholder="直接粘贴整张规范表（从 Excel / Word / 网页 / PDF 复制即可，任意列数）&#10;自动跳过表头、自动定位「长度要求」那一列&#10;示例：个人基本信息	身份信息	姓名	vchar（180）byte"></textarea>
+        <div class="pasteSide">
+          <button class="primary" id="btnBatchParse">解析成清单</button>
+          <button id="btnBatchDemo">填示例</button>
+          <button id="btnBatchClear">清空</button>
+        </div>
+      </div>
+      <div class="parseBox" id="bMsg"></div>
+
+      <div class="bOpt">
+        <div class="field" style="width:152px">
+          <label>长度口径</label>
+          <select id="bUnit">
+            <option value="char" selected>按字符数</option>
+            <option value="utf8">按字节 · UTF-8</option>
+            <option value="gbk">按字节 · GBK</option>
+          </select>
+        </div>
+        <div class="field" style="width:176px">
+          <label>字符集</label>
+          <select id="bCharset">
+            <option value="auto" selected>按解析结果自动</option>
+            <option value="digit">纯数字 0-9</option>
+            <option value="lower">小写字母</option>
+            <option value="upper">大写字母</option>
+            <option value="alpha">字母混合</option>
+            <option value="alnum">字母 + 数字</option>
+            <option value="cn">纯中文汉字</option>
+            <option value="mixcn">中英数混合</option>
+            <option value="fullwidth">全角字符</option>
+          </select>
+        </div>
+        <div class="field" style="width:176px">
+          <label>语义模板</label>
+          <select id="bTemplate">
+            <option value="auto" selected>自动匹配（按数据项名称）</option>
+            <option value="none">不使用 · 纯随机字符</option>
+          </select>
+        </div>
+        <div class="field grow">
+          <label>批次名称 <span class="hint">留空则自动命名；生成后可在记录区按批次筛选、整批导出</span></label>
+          <input id="bBatchName" placeholder="如：征信报文_第一轮边界">
+        </div>
+      </div>
+
+      <div class="bOpt" style="margin-bottom:4px">
+        <div class="field full">
+          <label>边界形态 <span class="hint">可多选 —— 每勾选一种，每个数据项就多生成一条</span></label>
+          <div class="bdList">
+            <label><input type="checkbox" class="bBd" value="max" checked> 卡上限</label>
+            <label><input type="checkbox" class="bBd" value="maxPlus1"> 上限 +1（超长）</label>
+            <label><input type="checkbox" class="bBd" value="maxMinus1"> 上限 -1</label>
+            <label><input type="checkbox" class="bBd" value="min"> 最小长度 1</label>
+            <label><input type="checkbox" class="bBd" value="zero"> 全 0</label>
+            <label><input type="checkbox" class="bBd" value="maxValue"> 全 9（最大）</label>
+            <label><input type="checkbox" class="bBd" value="spaces"> 纯空格串</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="batchBar">
+        <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="bSelAll" checked> 全选 / 全不选
+        </label>
+        <button class="sm" id="btnBSelOk">仅勾选已识别</button>
+        <span class="spacer"></span>
+        <span class="selInfo" id="bStat"></span>
+        <button class="primary" id="btnBatchGen">一键生成整批</button>
+      </div>
+
+      <div class="batchWrap">
+        <table>
+          <thead><tr>
+            <th style="width:34px"></th>
+            <th style="width:120px">信息类型</th>
+            <th style="width:110px">细分</th>
+            <th style="width:150px">数据项名称</th>
+            <th style="width:170px">长度要求（原文）</th>
+            <th style="width:88px">类型</th>
+            <th style="width:96px">长度 <span class="hint">可改</span></th>
+            <th style="width:110px">字符集</th>
+            <th style="width:120px">状态</th>
+          </tr></thead>
+          <tbody id="bBody"></tbody>
+        </table>
+        <div class="empty" id="bEmpty">先粘贴规范表，再点「解析成清单」</div>
+      </div>
+
+      <p class="note info">生成后会自动跳到记录区并锁定为该批次；记录区的<b>批次筛选</b>可整批查看、整批导出，或「删除本批次」。<br>
+      同一批次内以及与历史记录<b完全相同</b>的数据会被自动跳过，不会重复入库。</p>
+    </div>
+  </section>
+
+  <!-- ============ 2 记录与检索 ============ -->
+  <section class="card">
+    <div class="cardHead">
+      <h2><span class="tag tag-purple tag-num">2</span> 记录与检索</h2>
+      <span class="usage" id="recCount"></span>
+    </div>
+
+    <div class="filters">
+      <div class="field grow">
+        <label>搜索 <span class="hint">生成内容 / 数据项名称 / 长度要求 / 备注 / 标签 / 类型</span></label>
+        <input id="qKeyword" placeholder="输入关键词即时搜索…">
+      </div>
+      <div class="field">
+        <label>类型</label>
+        <select id="qType"><option value="">全部</option></select>
+      </div>
+      <div class="field">
+        <label>校验结果</label>
+        <select id="qPass">
+          <option value="">全部</option>
+          <option value="1">通过</option>
+          <option value="0">超出</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>标签</label>
+        <select id="qTag"><option value="">全部</option></select>
+      </div>
+      <div class="field">
+        <label>收藏</label>
+        <select id="qStar"><option value="">全部</option><option value="1">仅收藏</option></select>
+      </div>
+      <div class="field" style="min-width:150px">
+        <label>批次 <span class="hint">批量导入生成</span></label>
+        <select id="qBatch"><option value="">全部</option></select>
+      </div>
+      <div class="field">
+        <label>排序</label>
+        <select id="qSort">
+          <option value="new">时间 · 新→旧</option>
+          <option value="old">时间 · 旧→新</option>
+          <option value="lenDesc">长度 · 大→小</option>
+          <option value="lenAsc">长度 · 小→大</option>
+          <option value="name">数据项名称</option>
+        </select>
+      </div>
+      <div class="field" style="width:110px">
+        <label>每页</label>
+        <select id="qPageSize"><option>20</option><option selected>50</option><option>100</option><option>200</option></select>
+      </div>
+      <div class="field" style="width:auto">
+        <label>&nbsp;</label>
+        <button id="btnClearFilter">清空条件</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+        <input type="checkbox" id="chkAll"> 全选本页
+      </label>
+      <button class="sm" id="btnSelFiltered">选中全部筛选结果</button>
+      <button class="sm" id="btnSelNone">取消选择</button>
+      <span class="spacer"></span>
+      <span class="selInfo" id="selInfo"></span>
+      <button class="sm" id="btnExportSel">导出选中</button>
+      <button class="sm danger" id="btnDelSel">删除选中</button>
+      <button class="sm danger" id="btnDelBatch">删除本批次</button>
+    </div>
+
+    <div class="tableWrap">
+      <table id="recTable">
+        <thead><tr>
+          <th style="width:34px"></th>
+          <th style="width:82px">时间</th>
+          <th style="width:150px">数据项名称</th>
+          <th style="width:140px">长度要求</th>
+          <th style="width:80px">类型</th>
+          <th style="width:74px">长度</th>
+          <th>生成内容</th>
+          <th style="width:106px">字符 / 字节</th>
+          <th style="width:66px">校验</th>
+          <th style="width:110px">标签</th>
+          <th style="width:150px">操作</th>
+        </tr></thead>
+        <tbody id="recBody"></tbody>
+      </table>
+      <div class="empty" id="recEmpty" style="display:none">还没有记录 —— 在上方生成一条，或导入历史备份</div>
+    </div>
+    <div class="pager" id="pager"></div>
+  </section>
+
+  <footer>
+    字符长度生成器 v1.1 · 单文件离线运行，零依赖，无任何网络请求<br>
+    数据仅保存在本机浏览器的 localStorage，换浏览器 / 清缓存会丢失，请定期用「数据备份」导出 JSON
+  </footer>
+</div>
+
+<!-- ============ 导出中心 ============ -->
+<div class="mask" id="mask"></div>
+<div class="modal" id="modalExport">
+  <div class="modalHead">
+    <h3>导出中心 <span class="tag tag-blue">勾选想要的内容</span></h3>
+    <button class="x" data-close>×<span class="sr-only">关闭</span></button>
+  </div>
+  <div class="modalBody">
+    <div class="exportGrid">
+      <div>
+        <h4>① 选择要导出的列 <span class="tag tag-gray" id="colCount"></span></h4>
+        <div class="checkList" id="colList"></div>
+        <div style="margin-top:8px;display:flex;gap:6px">
+          <button class="sm" id="btnColAll">全选</button>
+          <button class="sm" id="btnColDefault">恢复默认</button>
+        </div>
+      </div>
+      <div>
+        <h4>② 格式与选项</h4>
+        <div class="fmtList" id="fmtList"></div>
+        <div class="optList">
+          <label><input type="checkbox" id="optGuard" checked> 数值防失真（强制 Excel 按文本写入）</label>
+          <label><input type="checkbox" id="optBom" checked> CSV 文件加 UTF-8 BOM</label>
+          <label><input type="checkbox" id="optHeader" checked> 包含表头</label>
+          <label><input type="checkbox" id="optAudit" checked> 导出前执行自检</label>
+        </div>
+        <hr class="sep">
+        <h4>清洗强度</h4>
+        <div class="optList">
+          <label><input type="radio" name="wash" value="strict" checked> 标准清洗（去首尾空白、压缩连续空格）</label>
+          <label><input type="radio" name="wash" value="light"> 仅剔除不可见字符（保留原始空格）</label>
+        </div>
+        <p class="note warn">如果你的测试数据<b>本身就是空格串或含首尾空格</b>，请选「仅剔除不可见字符」，否则空格会被清洗掉。</p>
+      </div>
+      <div>
+        <h4>③ 预览（前 5 行）</h4>
+        <pre class="preview" id="exportPreview"></pre>
+        <div class="audit" id="auditBox"></div>
+        <p class="note">导出范围：<b id="exportScope"></b></p>
+      </div>
+    </div>
+  </div>
+  <div class="modalFoot">
+    <span class="note" style="margin:0">主按钮会把表格同时写进剪贴板的 HTML 与纯文本两种格式，Excel / WPS 优先读 HTML，<b>不经过 CSV 解析，不会多空格</b></span>
+    <div class="btns">
+      <button id="btnCopyExcel" class="primary">复制到 Excel（推荐）</button>
+      <button id="btnCopyPlain">复制纯文本 / TSV</button>
+      <button id="btnCopyMd">复制 Markdown 表格</button>
+      <button id="btnDlCsv">下载 CSV</button>
+      <button id="btnDlTxt">下载 TXT</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 设置 ============ -->
+<div class="modal narrow" id="modalSettings">
+  <div class="modalHead"><h3>设置</h3><button class="x" data-close>×</button></div>
+  <div class="modalBody">
+    <div class="setRow">
+      <div><span class="l">默认长度口径</span><span class="d">规范原文写 byte 时，仍以这里为准；界面始终同时显示三种数值</span></div>
+      <select id="sUnit"><option value="char">按字符数</option><option value="utf8">按字节 UTF-8</option><option value="gbk">按字节 GBK</option></select>
+    </div>
+    <div class="setRow">
+      <div><span class="l">默认字符集</span></div>
+      <select id="sCharset"></select>
+    </div>
+    <div class="setRow">
+      <div><span class="l">生成后自动记录</span></div>
+      <input type="checkbox" id="sAutoRecord" checked>
+    </div>
+    <div class="setRow">
+      <div><span class="l">记录上限</span><span class="d">超出后自动淘汰最旧的记录</span></div>
+      <input type="number" id="sLimit" min="100" max="50000" step="100" style="width:110px">
+    </div>
+    <p class="note info">字节口径说明：UTF-8 下 1 个汉字 = 3 字节，GBK 下 = 2 字节。<br>
+    规范原文 <b>vchar（180）byte</b> 若按字节，UTF-8 是 60 个汉字、GBK 是 90 个汉字；若按字符数则是 180 个汉字（当前默认）。</p>
+  </div>
+  <div class="modalFoot"><span></span><div class="btns"><button class="primary" id="btnSaveSettings" data-close>保存</button></div></div>
+</div>
+
+<!-- ============ 备份 ============ -->
+<div class="modal narrow" id="modalBackup">
+  <div class="modalHead"><h3>数据备份</h3><button class="x" data-close>×</button></div>
+  <div class="modalBody">
+    <p class="note">所有记录存在本机浏览器里。换机器、换浏览器、清缓存都会丢，建议定期导出 JSON 备份。</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+      <button class="primary" id="btnExportJson">导出全部记录（JSON）</button>
+      <button id="btnImportJson">导入 JSON 备份</button>
+      <button class="danger" id="btnClearAll">清空全部记录</button>
+    </div>
+    <p class="note" id="backupInfo"></p>
+  </div>
+</div>
+
+<!-- ============ 备注 ============ -->
+<div class="modal narrow" id="modalNote">
+  <div class="modalHead"><h3>编辑备注与标签</h3><button class="x" data-close>×</button></div>
+  <div class="modalBody">
+    <div class="field" style="margin-bottom:12px">
+      <label>标签 <span class="hint">用逗号分隔，如：边界值,手机号</span></label>
+      <input id="noteTags" placeholder="边界值,超长">
+    </div>
+    <div class="field">
+      <label>备注</label>
+      <textarea id="noteText" rows="4" placeholder="补充说明…"></textarea>
+    </div>
+  </div>
+  <div class="modalFoot"><span></span><div class="btns"><button class="primary" id="btnSaveNote">保存</button><button id="btnCancelNote">取消</button></div></div>
+</div>
+
+<input type="file" id="fileInput" accept=".json,application/json" hidden>
+<div id="toasts"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   字符长度生成器 v1.0
+   ============================================================ */
+
+var LS_REC = 'clg.records.v1';
+var LS_CFG = 'clg.settings.v1';
+var LS_EXP = 'clg.export.v1';
+
+/* ---------- 常用汉字池（均在 GBK 内） ---------- */
+var CN_POOL =
+'一乙二十丁厂七卜人入八九几儿了力乃刀又三于干亏士土才寸下大丈与万上小口巾山千乞川亿个勺久凡及夕丸么广亡门义之尸弓己已子卫也女飞刃习叉马乡丰王井开夫天无元专云扎艺木五支厅不太犬区历尤友匹车巨牙屯比互切瓦止少日中冈贝内水见午牛手毛气升长仁什片仆化仇币仍仅斤爪反介父从今凶分乏公仓月氏勿欠风丹匀乌凤勾文六方火为斗忆订计户认心尺引丑巴孔队办以允予劝双书幻玉刊示末未击打巧正扑功扔去甘世古节本术可丙左厉右石布龙平灭轧东卡北占业旧帅归且旦目叶甲申叮电号田由史只央兄叼叫另叨叹四生失禾丘付仗代仙们仪白仔他斥瓜乎丛令用甩印乐句勿册犯外处冬鸟务包饥主市立闪兰半汁汇头汉宁穴它讨写让礼训必议讯记永司尼民出辽奶奴加召皮边发孕圣对台矛纠母幼丝' +
+'式刑动扛寺吉扣考托老执巩圾扩扫地扬场耳共芒亚芝朽朴机权过臣再协西压厌在有百存而页匠夸夺灰达列死成夹轨邪划迈毕至此贞师尘尖劣光当早吐吓虫曲团同吊吃因吸吗屿帆岁回岂刚则肉网年朱先丢舌竹迁乔伟传乒乓休伍伏优伐延件任伤价份华仰仿伙伪自血向似后行舟全会杀合兆企众爷伞创肌朵杂危旬旨负各名多争色壮冲冰庄庆亦刘齐交次衣产决充妄闭问闯羊并关米灯州汗污江池汤忙兴宇守宅字安讲军许论农讽设访寻那迅尽导异孙阵阳收阶阴防奸如妇好她妈戏羽观欢买红纤级约纪驰巡寿弄麦形进戒吞远违运扶抚坛技坏扰拒找批扯址走抄坝贡攻赤折抓扮抢孝均抛投坟抗坑坊抖护壳志扭块声把报却劫芽花芹芬苍芳严芦劳克苏杆杠杜材村杏极李杨求更束豆两丽医辰励否还歼来连步坚旱盯呈时吴助县里呆园旷围呀吨足邮男困吵串员听吩吹呜吧吼别岗帐财针钉告我乱利秃秀私每兵估体何但伸作伯伶佣低你住位伴身皂佛近彻役返余希坐谷妥含邻岔肝肚肠龟免狂犹角删条卵岛迎饭饮系言冻状亩况床库疗应冷这序辛弃冶忘闲间闷判灶灿弟汪沙汽沃泛沟没沈沉怀忧快完宋宏牢究穷灾良证启评补初社识诉诊词译君灵即层尿尾迟局改张忌际陆阿陈阻附妙妖妨努忍劲鸡驱纯纱纳纲驳纵纷纸纹纺驴纽' +
+'奉玩环武青责现表规抹拢拔拣担坦押抽拐拖拍者顶拆拥抵拘势抱垃拉拦拌幸招坡披拨择抬其取苦若茂苹苗英范直茄茎茅林枝杯柜析板松枪构杰述枕丧或画卧事刺枣雨卖矿码厕奔奇奋态欧垄妻轰顷转斩轮软到非叔肯齿些虎虏肾贤尚旺具果味昆国昌畅明易昂典固忠咐呼鸣咏呢岸岩帖罗帜岭凯败贩购图钓制知垂牧物乖刮秆和季委佳侍供使例版侄侦侧凭侨佩货依的迫质欣征往爬彼径所舍金命斧爸采受乳贪念贫肤肺肢肿胀朋股肥服胁周昏鱼兔狐忽狗备饰饱饲变京享店夜庙府底剂郊废净盲放刻育闸闹郑券卷单炒炊炕炎炉沫浅法泄河沾泪油泊沿泡注泻泳泥沸波泼泽治怖性怕怜怪学宝宗定宜审宙官空帘实试郎诗肩房诚衬衫视话诞询该详建肃录隶居届刷屈弦承孟孤陕降限妹姑姐姓始驾参艰线练组细驶织终驻驼绍经贯' +
+'奏春帮珍玻毒型挂封持项垮挎城挠政赴赵挡挺括拴拾挑指垫挣挤拼挖按挥挪某甚革荐巷带草茧茶荒茫荡荣故胡南药标枯柄栋相查柏柳柱柿栏树要咸威歪研砖厘厚砌砍面耐耍牵残殃轻鸦皆背战点临览竖省削尝是盼眨哄显哑冒映星昨畏趴胃贵界虹虾蚁思蚂虽品咽骂哗咱响哈咬咳哪炭峡罚贱贴骨钞钟钢钥钩卸缸拜看矩怎牲选适秒香种秋科重复竿段便俩贷顺修保促侮俭俗俘信皇泉鬼侵追俊盾待律很须叙剑逃食盆胆胜胞胖脉勉狭狮独狡狱狠贸怨急饶蚀饺饼弯将奖哀亭亮度迹庭疮疯疫疤姿亲音帝施闻阀阁差养美姜叛送类迷前首逆总炼炸炮烂剃洁洪洒浇浊洞测洗活派洽染济洋洲浑浓津恒恢恰恼恨举觉宣室宫宪突穿窃客冠语扁袄祖神祝误诱说诵垦退既屋昼费陡眉孩除险院娃姥姨姻娇怒架贺盈勇怠柔垒绑绒结绕骄绘给络骆绝绞统' +
+'耕耗艳泰珠班素蚕顽盏匪捞栽捕振载赶起盐捎捏埋捉捆捐损都哲逝捡换挽热恐壶挨耻耽恭莲莫荷获晋恶真框桂档桐株桥桃格校核样根索哥速逗栗配翅辱唇夏础破原套逐烈殊顾轿较顿毙致柴桌虑监紧党晒眠晓鸭晃晌晕蚊哨哭恩唤啊唉罢峰圆贼贿钱钳钻铁铃铅缺氧氨特牺造乘敌秤租积秧秩称秘透笔笑笋债借值倚倾倒倘俱倡候俯倍倦健臭射躬息徒徐舰舱般航途拿爹爱颂翁脆脂胸胳脏胶脑狸狼逢留皱饿恋桨浆衰高席准座脊症病疾疼疲效离唐瓷资凉站剖竞部旁旅畜阅羞瓶拳粉料益兼烤烘烦烧烛烟递涛浙涝酒涉消浩海涂浴浮流润浪浸涨烫涌悟悄悔悦害宽家宵宴宾窄容宰案请朗诸读扇袜袖袍被祥课谁调冤谅谈谊剥恳展剧屑弱陵陶陷陪娱娘通能难预桑绢绣验继' +
+'球理捧堵描域掩捷排掉堆推掀授教掏掠培接控探据掘职基著勒黄萌萝菌菜萄菊萍菠营械梦梢梅检梳梯桶救副票戚爽聋袭盛雪辅辆虚雀堂常匙晨睁眯眼悬野啦晚啄距跃略蛇累唱患唯崖崭崇圈铜铲银甜梨犁移笨笼笛符第敏做袋悠偿偶偷您售停偏假得衔盘船斜盒鸽悉欲彩领脚脖脸脱象够猜猪猎猫猛馅馆凑减毫麻痒痕廊康庸鹿盗章竟商族旋望率着盖粘粗粒断剪兽清添淋淹渠渐混渔淘液淡深渗梁情人堪惜渐惭悼惧惕惊惨惯寇寄宿窑密谋谎祸谜逮敢屠弹随蛋隆隐婚婶颈绩绪续骑绳维绵绸绿' +
+'琴斑替款堪搭塔越趁趋超提堤博揭喜插揪搜煮援裁搁搂搅握揉斯期欺联散惹葬葛董葡敬葱落朝辜葵棒棋植森椅椒棵棍棉棚棕惠惑逼厨厦硬确雁殖裂雄暂雅辈悲紫辉敞赏掌晴暑最量喷晶喇遇喊景践跌跑遗蛙蛛蜓喝喂喘喉幅帽赌赔黑铸铺链销锁锄锅锈锋锐短智毯鹅剩稍程稀税筐等筑策筛筒答筋筝傲傅牌堡集焦傍储奥街惩御循艇舒番释禽腊脾腔鲁猾猴然馋装蛮就痛童阔善羡普粪尊道曾焰港湖渣湿温渴滑湾渡游滋溉愤慌惰愧愉慨割寒富窜窝窗遍裕裤裙谢谣谦属屡强粥疏隔隙絮骚缓缘' +
+'瑞魂肆摄摸填搏塌鼓摆携搬摇搞塘摊蒜勤鹊蓝墓幕蓬蓄蒙蒸献禁楚想槐榆楼概赖酬感碍碑碎碰碗碌雷零雾雹输督龄鉴睛睡睬鄙愚暖盟歇暗照跨跳跪路跟遣蛾蜂嗓置罪罩错锡锣锤锦键锯矮辞稠愁筹签简毁舅鼠催傻像躲微愈遥腰腥腹腾腿触解酱痰廉新韵意粮数煎塑慈煤煌满漠源滤滥滔溪溜滚滨粱滩慎誉塞谨福群殿辟障嫌嫁叠缝缠' +
+'静碧璃墙撇嘉摧截誓境摘摔聚蔽慕暮蔑模榴榜榨歌遭酷酿酸磁愿需弊裳颗嗽蜻蜡蝇蜘赚锹锻舞稳算箩管僚鼻魄貌膜膊膀鲜疑馒裹敲豪膏遮腐瘦辣竭端旗精歉熄熔漆漂漫滴演漏慢寨赛察蜜谱嫩翠熊凳骡缩' +
+'慧撕撒趣趟撑播撞撤增聪鞋蕉蔬横槽樱橡飘醋醉震霉瞒题暴瞎影踢踏踩踪蝶蝴嘱墨镇靠稻黎稿稼箱箭篇僵躺僻德艘膝膛熟摩颜毅糊遵潜潮懂额慰劈' +
+'操燕薯薪薄颠橘整融醒餐嘴蹄器赠默镜赞篮邀衡膨雕磨凝辨辩糖糕燃澡激懒壁避缴' +
+'戴擦鞠藏霜霞瞧蹈螺穗繁辫赢糟糠燥臂翼骤' +
+'鞭覆蹦镰翻鹰' +
+'警攀蹲颤瓣爆疆' +
+'壤耀躁嚼嚷籍魔灌' +
+'蠢霸露' +
+'囊罐';
+
+var POOLS = {
+  digit:'0123456789',
+  lower:'abcdefghijklmnopqrstuvwxyz',
+  upper:'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  alpha:'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+  alnum:'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+  cn:CN_POOL,
+  mixcn:CN_POOL + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+  fullwidth:'ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ０１２３４５６７８９！＠＃％＆（）【】',
+  special:'!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~',
+  emoji:'😀😁😂🤣😃😄😅😆😉😊😋😎😍😘🥰😗😙😚🙂🤗🤔😐😑😶🙄😏😣😥😮😯😪😫🥱😴😌😛😜😝🤤😒😓😔😕🙃🤑😲☹️🙁😖😞😟😤😢😭😦😧😨😩🤯😬😰😱🥵🥶😳🤪😵🥴😠😡🤬😷🤒🤕😇🤠🤡🤥🤫🤭🧐🤓😈👿👹👺💀☠️👻👽🤖💩'
+};
+
+var TYPE_LABEL = {
+  VARCHAR:'VARCHAR', CHAR:'CHAR', C:'C', N:'N', AN:'AN', ANC:'ANC',
+  UINT:'uInt', INT:'Int', DECIMAL:'Decimal', DATE:'Date', NONE:'--'
+};
+var TYPE_COLOR = {
+  VARCHAR:'blue', CHAR:'blue', C:'teal', N:'green', AN:'purple', ANC:'purple',
+  UINT:'amber', INT:'amber', DECIMAL:'coral', DATE:'pink', NONE:'gray'
+};
+var TYPE_DEFAULT_CHARSET = {
+  VARCHAR:'cn', CHAR:'cn', C:'cn', N:'digit', AN:'alpha', ANC:'alnum',
+  UINT:'digit', INT:'digit', DECIMAL:'digit', DATE:'digit', NONE:'cn'
+};
+var TYPE_DEFAULT_MODE = { VARCHAR:'max', CHAR:'fixed', C:'max', N:'fixed', AN:'max', ANC:'max', UINT:'max', INT:'max', DECIMAL:'fixed', DATE:'fixed', NONE:'max' };
+
+var DEFAULT_COLS = ['idx','createdAt','batch','category','subCategory','fieldName','specRaw','typeCode','length','value','charCount','utf8Bytes','gbkBytes','pass','tags','note'];
+
+var BOUNDARY_LABEL = {
+  max:'卡上限', maxPlus1:'上限+1', maxMinus1:'上限-1', min:'最小长度', random:'随机长度',
+  zero:'全 0', maxValue:'全 9', spaces:'纯空格', empty:'空字符串', nullval:'NULL'
+};
+
+var COLUMNS = [
+  {key:'idx',         label:'序号',       get:function(r,i){return i+1;}},
+  {key:'createdAt',   label:'生成时间',   get:function(r){return fmtTime(r.createdAt);}},
+  {key:'batch',       label:'批次',       get:function(r){return r.batchName||'';}},
+  {key:'boundary',    label:'边界形态',   get:function(r){return BOUNDARY_LABEL[r.boundary]||'';}},
+  {key:'category',    label:'信息类型',   get:function(r){return r.category||'';}},
+  {key:'subCategory', label:'信息类型细分',get:function(r){return r.subCategory||'';}},
+  {key:'fieldName',   label:'数据项名称', get:function(r){return r.fieldName||'';}},
+  {key:'specRaw',     label:'长度要求',   get:function(r){return r.specRaw||'';}},
+  {key:'typeCode',    label:'类型',       get:function(r){return TYPE_LABEL[r.typeCode]||r.typeCode||'';}},
+  {key:'length',      label:'长度',       get:function(r){return (r.length==null?'':r.length) + (r.lengthMode==='max'?'（上限）':'（固定）');}},
+  {key:'value',       label:'生成内容',   get:function(r){return r.value==null?'':r.value;}},
+  {key:'charCount',   label:'字符数',     get:function(r){return r.charCount;}},
+  {key:'utf8Bytes',   label:'UTF-8字节',  get:function(r){return r.utf8Bytes;}},
+  {key:'gbkBytes',    label:'GBK字节',    get:function(r){return r.gbkBytes;}},
+  {key:'pass',        label:'校验结果',   get:function(r){return r.pass?'通过':'超出';}},
+  {key:'unit',        label:'长度口径',   get:function(r){return r.unit==='char'?'字符数':(r.unit==='utf8'?'UTF-8字节':'GBK字节');}},
+  {key:'tags',        label:'标签',       get:function(r){return (r.tags||[]).join('/');}},
+  {key:'note',        label:'备注',       get:function(r){return r.note||'';}},
+  {key:'star',        label:'收藏',       get:function(r){return r.starred?'★':'';
+  }}
+];
+
+/* ============================================================
+   工具函数
+   ============================================================ */
+function $(s){ return document.querySelector(s); }
+function $$(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); }
+function ri(n){ return Math.floor(Math.random()*n); }
+function pick(a){ return a[ri(a.length)]; }
+function esc(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function fmtTime(iso){
+  var d = new Date(iso);
+  if(isNaN(d)) return '';
+  var p = function(n){ return n<10?'0'+n:''+n; };
+  return (d.getMonth()+1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+function fmtFull(iso){
+  var d = new Date(iso);
+  if(isNaN(d)) return '';
+  var p = function(n){ return n<10?'0'+n:''+n; };
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+}
+function stamp(){
+  var d = new Date(), p = function(n){ return n<10?'0'+n:''+n; };
+  return ''+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'_'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds());
+}
+
+/* ---------- 长度计算（三口径） ---------- */
+function charCount(s){ return Array.from(String(s==null?'':s)).length; }
+function utf8Bytes(s){
+  try{ return new TextEncoder().encode(String(s==null?'':s)).length; }
+  catch(e){
+    var str = String(s==null?'':s), n = 0;
+    for(var i=0;i<str.length;i++){
+      var c = str.charCodeAt(i);
+      if(c < 0x80) n += 1;
+      else if(c < 0x800) n += 2;
+      else if(c >= 0xD800 && c <= 0xDBFF){ n += 4; i++; }
+      else n += 3;
+    }
+    return n;
+  }
+}
+function gbkBytes(s){
+  var str = String(s==null?'':s), arr = Array.from(str), n = 0;
+  for(var i=0;i<arr.length;i++){
+    var cp = arr[i].codePointAt(0);
+    if(cp <= 0x7F) n += 1;
+    else n += 2;
+  }
+  return n;   /* 常用汉字/全角/中文标点均为 2 字节 */
+}
+function gbkUnsupportedCount(s){
+  var arr = Array.from(String(s==null?'':s)), n = 0;
+  for(var i=0;i<arr.length;i++){
+    var cp = arr[i].codePointAt(0);
+    if(cp > 0x9FA5 && !(cp>=0x3000&&cp<=0x303F) && !(cp>=0xFF00&&cp<=0xFFEF) && !(cp>=0x00A1&&cp<=0x00FF)) n++;
+  }
+  return n;
+}
+
+/* ============================================================
+   规格解析
+   ============================================================ */
+function normalizeSpec(s){
+  return String(s==null?'':s)
+    .replace(/[\u00A0\u3000]/g,' ')
+    .replace(/[\uFF08\u300C]/g,'(').replace(/[\uFF09\u300D]/g,')')
+    .replace(/[\uFF0E\u3002\uFF61]/g,'.')
+    .replace(/[\uFF0C]/g,',')
+    .replace(/[\u200B-\u200D\u2060\uFEFF\u0007]/g,'')
+    .replace(/[\r\n\t]+/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function parseSpec(raw){
+  var s = normalizeSpec(raw);
+  if(!s) return null;
+
+  if(/^(--|-{2,}|—{2,}|无|不限|无限制|n\/a|none)$/i.test(s)){
+    return { ok:true, skip:true, raw:s, typeCode:'NONE', length:null, lengthMode:'max', byteKeyword:false, note:'规范标注为「--」，无长度要求，无需长度测试' };
+  }
+
+  var m, typeCode = null, len = null, scale = null, fixed = false;
+  var byteKeyword = /byte|字节/i.test(s);
+
+  if((m = s.match(/^varchar2?\s*\(\s*(\d+)\s*\)/i)))            { typeCode='VARCHAR'; len = +m[1]; }
+  else if((m = s.match(/^vchar\s*\(\s*(\d+)\s*\)/i)))           { typeCode='VARCHAR'; len = +m[1]; }
+  else if((m = s.match(/^nvarchar2?\s*\(\s*(\d+)\s*\)/i)))      { typeCode='VARCHAR'; len = +m[1]; }
+  else if((m = s.match(/^char\s*\(\s*(\d+)\s*\)/i)))            { typeCode='CHAR';    len = +m[1]; fixed = true; }
+  else if((m = s.match(/^(?:decimal|numeric|number)\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)/i))) { typeCode='DECIMAL'; len = +m[1]; scale = +m[2]; fixed = true; }
+  else if((m = s.match(/^(u?int|bigint|smallint|tinyint|unsigned\s+int)\s*\(?\s*\.{0,3}\s*(\d+)?\s*\)?/i))){
+    typeCode = /^u/i.test(m[1]) ? 'UINT' : 'INT';
+    len = m[2] ? +m[2] : null;
+  }
+  else if((m = s.match(/^anc\s*\(?\s*\.{0,3}\s*(\d+)\s*\)?/i))) { typeCode='ANC'; len = +m[1]; }
+  else if((m = s.match(/^an\s*\(?\s*\.{0,3}\s*(\d+)\s*\)?/i)))  { typeCode='AN';  len = +m[1]; }
+  else if((m = s.match(/^n\s*\(?\s*\.{0,3}\s*(\d+)\s*\)?/i)))   { typeCode='N';   len = +m[1]; fixed = !/\./.test(m[0]); }
+  else if((m = s.match(/^c\s*\(?\s*\.{0,3}\s*(\d+)\s*\)?/i)))   { typeCode='C';   len = +m[1]; }
+  else if(/^(date|datetime|time|yyyy|yyyymmdd)/i.test(s))       { typeCode='DATE'; len = /(\d+)/.test(s) ? +s.match(/(\d+)/)[1] : 8; fixed = true; }
+  else {
+    var dm = s.match(/(\d+)/);
+    if(dm){ len = +dm[1]; typeCode = byteKeyword ? 'VARCHAR' : 'VARCHAR'; }
+    else return { ok:false, raw:s, msg:'没能识别出长度数字，请手工在下方选择类型并填写长度' };
+  }
+
+  var hasDots = /\.{2,}/.test(s);
+  var lengthMode = fixed ? 'fixed' : (hasDots ? 'max' : (TYPE_DEFAULT_MODE[typeCode] || 'max'));
+  if(typeCode === 'VARCHAR') lengthMode = 'max';
+  if(typeCode === 'DATE') lengthMode = 'fixed';
+
+  return {
+    ok:true, skip:false, raw:s, typeCode:typeCode, length:len, scale:scale,
+    lengthMode:lengthMode, byteKeyword:byteKeyword,
+    charset: TYPE_DEFAULT_CHARSET[typeCode] || 'cn'
+  };
+}
+
+/* ============================================================
+   语义模板
+   ============================================================ */
+var ORG_HEAD = ['某某市','某某省','中国','华夏','东方','长江','环宇','泰和'];
+var ORG_TAIL = ['银行','支行','分行','有限责任公司','股份有限公司','人民法院','税务局','管理中心','社会保障局','信用合作社','保险公司','担保有限公司'];
+var ADDR_HEAD = ['某某省某某市','某某自治区某某市','某某市','某某省'];
+var ADDR_ROAD = ['人民路','解放路','建设大道','中山路','新华街','文化路','和平路','长江路'];
+var ADDR_TAIL = ['1栋','2栋','3单元','A座','B座','C区'];
+var EMAIL_DOMAIN = ['qq.com','163.com','126.com','sina.com','example.com','test.com','company.cn'];
+
+function tmplPhone(len){
+  if(len < 7) return null;
+  var head = pick(['138','139','137','136','135','150','151','152','158','159','182','183','187','188','130','131','132','155','156','185','186','133','153','180','181','189','177','173','199','166']);
+  var s = head;
+  while(s.length < len) s += ri(10);
+  return s.slice(0, len);
+}
+function tmplAmount(len){
+  if(len < 1) return null;
+  var decimals = (len >= 4 && Math.random() < 0.65) ? 2 : 0;
+  var intLen = len - (decimals ? decimals + 1 : 0);
+  if(intLen < 1){ decimals = 0; intLen = len; }
+  var s = String(1 + ri(9)) + randomFrom(POOLS.digit, Math.max(0, intLen - 1));
+  if(decimals) s += '.' + randomFrom(POOLS.digit, decimals);
+  return s.slice(0, len);
+}
+function tmplDate(len){
+  var d = new Date(Date.now() - ri(365*6) * 86400000);
+  var p = function(n){ return n<10?'0'+n:''+n; };
+  return (''+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())).slice(0,len);
+}
+function tmplOrg(len){
+  if(len < 4) return null;
+  var head = pick(ORG_HEAD), tail = pick(ORG_TAIL);
+  var midLen = Math.max(1, len - head.length - tail.length);
+  var s = head + randomFrom(POOLS.cn, midLen) + tail;
+  return Array.from(s).slice(0, len).join('');
+}
+function tmplAddress(len){
+  if(len < 6) return null;
+  var s = pick(ADDR_HEAD) + pick(ADDR_ROAD) + (1+ri(999)) + '号' + pick(ADDR_TAIL) + (1+ri(30)) + '室';
+  var n = Array.from(s).length;
+  if(n < len) s += randomFrom(POOLS.cn, len - n);
+  return Array.from(s).slice(0, len).join('');
+}
+function tmplIdCard(len){
+  if(len !== 18) return null;
+  var area = pick(['110101','310101','440301','330106','510107','320106','440106','110108']);
+  var d = new Date(Date.now() - ri(365*40) * 86400000);
+  var p = function(x){ return x<10?'0'+x:''+x; };
+  var birth = ''+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate());
+  var seq = String(100 + ri(900));
+  var base = area + birth + seq;
+  var w = [7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2];
+  var codes = ['1','0','X','9','8','7','6','5','4','3','2'];
+  var sum = 0;
+  for(var i=0;i<17;i++) sum += parseInt(base.charAt(i),10) * w[i];
+  return base + codes[sum % 11];
+}
+function tmplEmail(len){
+  if(len < 8) return null;
+  var dom = '@' + pick(EMAIL_DOMAIN);
+  var localLen = len - Array.from(dom).length;
+  if(localLen < 2) return null;
+  return randomFrom(POOLS.lower, localLen) + dom;
+}
+
+function autoTemplate(fieldName, specRaw){
+  var s = String(fieldName||'') + ' ' + String(specRaw||'');
+  if(/手机|电话|mobile|phone/i.test(s)) return 'phone';
+  if(/身份证|证件号/i.test(s)) return 'idcard';
+  if(/邮箱|邮件|e-?mail/i.test(s)) return 'email';
+  if(/地址|住址|住所|坐落/i.test(s)) return 'address';
+  if(/金额/i.test(s)) return 'amount';
+  if(/日期|时间|年月/i.test(s)) return 'date';
+  if(/机构|银行|法院|机关|公司|税务|中心|部门|学校|医院|检察院/i.test(s)) return 'orgName';
+  if(/单位/i.test(s)) return 'orgName';
+  if(/费|额|余额|工资|收入|价格|比率|税率|占比/i.test(s)) return 'amount';
+  if(/编号|号码|序号|代码/i.test(s)) return null;
+  return null;
+}
+
+/* ============================================================
+   生成
+   ============================================================ */
+function randomFrom(pool, n){
+  if(n <= 0) return '';
+  var chars = Array.from(pool);
+  if(!chars.length) return '';
+  var out = '';
+  for(var i=0;i<n;i++) out += chars[ri(chars.length)];
+  return out;
+}
+
+function bytesPerChar(charset, unit){
+  if(unit === 'char') return 1;
+  if(charset === 'emoji') return 4;
+  if(charset === 'cn' || charset === 'mixcn') return (unit === 'utf8' ? 3 : 2);
+  if(charset === 'fullwidth') return (unit === 'utf8' ? 3 : 2);
+  return 1;
+}
+
+/* 把"限值"换算成"要生成多少个字符" */
+function limitToChars(limit, unit, charset){
+  if(unit === 'char') return limit;
+  var bpc = bytesPerChar(charset, unit);
+  return Math.max(1, Math.floor(limit / bpc));
+}
+
+function buildValue(cfg){
+  var len0 = cfg.length;
+  if(len0 == null || len0 === '' || isNaN(len0)) len0 = 0;
+  len0 = Math.max(0, parseInt(len0, 10));
+
+  if(cfg.typeCode === 'NONE'){
+    return { value:'', note:'无长度要求' };
+  }
+
+  var unit = cfg.unit || 'char';
+  var charset = cfg.charset || 'cn';
+  var limit = limitToChars(len0, unit, charset);
+
+  var target;
+  switch(cfg.boundary){
+    case 'maxPlus1':  target = limit + 1; break;
+    case 'maxMinus1': target = Math.max(0, limit - 1); break;
+    case 'min':       target = (cfg.lengthMode === 'fixed') ? limit : 1; break;
+    case 'random':    target = limit > 1 ? (1 + ri(limit)) : limit; break;
+    case 'zero':      target = limit; break;
+    case 'maxValue':  target = limit; break;
+    case 'spaces':    target = limit; break;
+    case 'empty':     target = 0; break;
+    case 'nullval':   target = 0; break;
+    default:          target = limit; break;
+  }
+  target = Math.max(0, target);
+
+  if(cfg.boundary === 'empty')  return { value:'', note:'空字符串' };
+  if(cfg.boundary === 'nullval')return { value:'NULL', note:'NULL 值' };
+  if(cfg.boundary === 'spaces') return { value:new Array(target+1).join(' '), note:'纯空格串 ' + target + ' 个空格' };
+  if(cfg.boundary === 'zero')   return { value:new Array(target+1).join('0'), note:'全 0' };
+  if(cfg.boundary === 'maxValue') {
+    if(/^(digit|alnum)$/.test(charset)) return { value:new Array(target+1).join('9'), note:'全 9（最大值）' };
+    return { value:randomFrom(POOLS[charset] || POOLS.cn, target), note:'取字符集内字符' };
+  }
+  if(target === 0) return { value:'', note:'长度为 0' };
+
+  /* 语义模板优先 */
+  var tpl = cfg.template;
+  if(tpl === 'auto') tpl = autoTemplate(cfg.fieldName, cfg.specRaw);
+  if(tpl && tpl !== 'none'){
+    var v = null;
+    if(tpl === 'phone')   v = tmplPhone(target);
+    else if(tpl === 'amount')  v = tmplAmount(target);
+    else if(tpl === 'date')    v = tmplDate(target);
+    else if(tpl === 'orgName') v = tmplOrg(target);
+    else if(tpl === 'address') v = tmplAddress(target);
+    else if(tpl === 'idcard')  v = tmplIdCard(target);
+    else if(tpl === 'email')   v = tmplEmail(target);
+    if(v != null && charCount(v) === target) return { value:v, note:'语义模板：' + ({phone:'手机号码',amount:'金额',date:'日期',orgName:'机构名称',address:'地址',idcard:'身份证号',email:'邮箱'}[tpl]||tpl) };
+  }
+
+  var pool = POOLS[charset] || POOLS.cn;
+  return { value:randomFrom(pool, target), note:'字符集：' + ($$('#fCharset option').filter(function(o){return o.value===charset;})[0]||{}).textContent || charset };
+}
+
+/* ============================================================
+   存储
+   ============================================================ */
+var records = [];
+var settings = { unit:'char', charset:'cn', autoRecord:true, limit:2000 };
+var exportCfg = { cols:DEFAULT_COLS.slice(), guard:true, bom:true, header:true, audit:true, wash:'strict' };
+
+function loadAll(){
+  try{ records = JSON.parse(localStorage.getItem(LS_REC) || '[]'); }catch(e){ records = []; }
+  try{ var s = JSON.parse(localStorage.getItem(LS_CFG) || 'null'); if(s) settings = Object.assign(settings, s); }catch(e){}
+  try{ var x = JSON.parse(localStorage.getItem(LS_EXP) || 'null'); if(x) exportCfg = Object.assign(exportCfg, x); }catch(e){}
+  syncDefaultCols();
+}
+/* 版本升级时，把新增的默认列补进老用户的导出配置（不覆盖用户已取消的） */
+function syncDefaultCols(){
+  if(!exportCfg.cols || !exportCfg.cols.length) exportCfg.cols = DEFAULT_COLS.slice();
+  DEFAULT_COLS.forEach(function(k){
+    if(exportCfg.cols.indexOf(k) < 0) exportCfg.cols.push(k);
+  });
+  exportCfg.cols = COLUMNS.filter(function(c){ return exportCfg.cols.indexOf(c.key) >= 0; }).map(function(c){ return c.key; });
+}
+function saveRecords(){
+  try{
+    localStorage.setItem(LS_REC, JSON.stringify(records));
+  }catch(e){
+    toast('保存失败：本地存储已满，请删除部分记录或导出备份', 'bad');
+  }
+}
+function saveSettings(){ try{ localStorage.setItem(LS_CFG, JSON.stringify(settings)); }catch(e){} }
+function saveExportCfg(){ try{ localStorage.setItem(LS_EXP, JSON.stringify(exportCfg)); }catch(e){} }
+
+function enforceLimit(){
+  if(records.length > settings.limit){
+    records = records.slice(records.length - settings.limit);
+    saveRecords();
+  }
+}
+function storageUsage(){
+  var raw = 0;
+  try{ raw = JSON.stringify(records).length; }catch(e){}
+  var cap = 5 * 1024 * 1024;
+  return { bytes:raw, pct:Math.min(100, Math.round(raw / cap * 100)) };
+}
+function renderUsage(){
+  var u = storageUsage();
+  $('#usageBox').innerHTML = '记录 ' + records.length + ' 条 · 占用 ' + (u.bytes/1024).toFixed(1) + ' KB<span class="bar"><i style="width:' + u.pct + '%"></i></span>';
+}
+
+/* ============================================================
+   生成器 UI
+   ============================================================ */
+function showParse(cls, html){
+  var b = $('#parseMsg');
+  b.className = 'parseBox show ' + cls;
+  b.innerHTML = html;
+}
+function hideParse(){ $('#parseMsg').className = 'parseBox'; }
+
+function applyParsed(p, extra){
+  if(p == null){ showParse('err','请先在上方粘贴长度要求'); return; }
+  if(!p.ok){
+    showParse('err', esc(p.msg || '未能识别'));
+    return;
+  }
+  if(p.skip){
+    $('#fType').value = 'NONE';
+    showParse('warn', '识别结果：<b>无长度要求（--）</b> —— ' + esc(p.note));
+    return;
+  }
+  $('#fType').value = p.typeCode;
+  if(p.length != null) $('#fLength').value = p.length;
+  $('#fMode').value = p.lengthMode;
+  $('#fCharset').value = p.charset;
+  if(extra){
+    if(extra.category    != null) $('#fCategory').value = extra.category;
+    if(extra.subCategory != null) $('#fSubCategory').value = extra.subCategory;
+    if(extra.fieldName   != null) $('#fFieldName').value = extra.fieldName;
+  }
+  var bits = [];
+  bits.push('类型 <b>' + TYPE_LABEL[p.typeCode] + '</b>');
+  bits.push('长度 <b>' + p.length + '</b>');
+  bits.push(p.lengthMode === 'fixed' ? '固定长度' : '上限长度（可变）');
+  if(p.scale != null) bits.push('小数位 <b>' + p.scale + '</b>');
+  var msg = '识别结果：' + bits.join(' · ');
+  if(p.byteKeyword){
+    msg += '<br><b>注意</b>：原文含 <b>byte</b> 关键字。当前口径为「按字符数」，即生成 <b>' + p.length +
+           '</b> 个字符；UTF-8 下实际约 <b>' + Math.round(p.length/3) + '</b> 个汉字、GBK 下约 <b>' + Math.round(p.length/2) +
+           '</b> 个汉字。若需按字节卡长度，请把「长度口径」切换为 UTF-8 或 GBK。';
+    showParse('warn', msg);
+  }else{
+    showParse('ok', msg);
+  }
+}
+
+/* 智能粘贴：支持 4 列整行 */
+function smartFill(){
+  var raw = $('#specPaste').value;
+  if(!raw || !raw.trim()){ showParse('err','请先在上方粘贴内容'); return; }
+  var lines = raw.split(/\r?\n/).map(function(x){return x.trim();}).filter(function(x){return x;});
+  var line = lines[lines.length-1];
+  var parts = line.split(/\t|\s*\|\s*/).map(function(x){ return x.replace(/^[\s|]+|[\s|]+$/g,''); }).filter(function(x){ return x !== ''; });
+  var spec, extra = {};
+  if(parts.length >= 4){
+    extra.category = parts[0]; extra.subCategory = parts[1]; extra.fieldName = parts[2]; spec = parts[3];
+  }else if(parts.length === 3){
+    extra.category = parts[0]; extra.fieldName = parts[1]; spec = parts[2];
+  }else if(parts.length === 2){
+    extra.fieldName = parts[0]; spec = parts[1];
+  }else{
+    spec = line;
+  }
+  applyParsed(parseSpec(spec), extra);
+  doGenerate();
+}
+
+function collectCfg(){
+  var specRaw = normalizeSpec($('#specPaste').value.split(/\r?\n/).filter(function(x){return x.trim();}).pop() || '');
+  var typeCode = $('#fType').value;
+  return {
+    typeCode: typeCode,
+    length: parseInt($('#fLength').value, 10),
+    lengthMode: $('#fMode').value,
+    unit: $('#fUnit').value,
+    charset: $('#fCharset').value,
+    boundary: $('#fBoundary').value,
+    template: $('#fTemplate').value,
+    category: $('#fCategory').value.trim(),
+    subCategory: $('#fSubCategory').value.trim(),
+    fieldName: $('#fFieldName').value.trim(),
+    specRaw: specRaw
+  };
+}
+
+function measure(v){
+  return { chars:charCount(v), utf8:utf8Bytes(v), gbk:gbkBytes(v) };
+}
+
+var lastResult = null;
+
+function doGenerate(){
+  var cfg = collectCfg();
+  if(cfg.length == null || isNaN(cfg.length)){ toast('请填写长度','bad'); return; }
+  var r = buildValue(cfg);
+  var m = measure(r.value);
+
+  var limit = cfg.length;
+  var actual = cfg.unit === 'char' ? m.chars : (cfg.unit === 'utf8' ? m.utf8 : m.gbk);
+  var pass = (cfg.typeCode === 'NONE') ? true : (actual <= limit);
+  var over = actual - limit;
+
+  lastResult = {
+    id:'r_' + Date.now() + '_' + ri(1000),
+    createdAt:new Date().toISOString(),
+    category:cfg.category, subCategory:cfg.subCategory, fieldName:cfg.fieldName,
+    specRaw:cfg.specRaw, typeCode:cfg.typeCode, length:limit, lengthMode:cfg.lengthMode,
+    unit:cfg.unit, charset:cfg.charset, boundary:cfg.boundary, template:cfg.template,
+    value:r.value, charCount:m.chars, utf8Bytes:m.utf8, gbkBytes:m.gbk,
+    pass:pass, tags:[], note:'', starred:false
+  };
+
+  var box = $('#resValue');
+  box.textContent = $('#fShowInvisible').checked
+    ? r.value.replace(/ /g,'·').replace(/\t/g,'→').replace(/\r?\n/g,'↵')
+    : r.value;
+  $('#resLabel').textContent = r.note ? '（' + r.note + '）' : '';
+
+  var unitName = cfg.unit === 'char' ? '字符' : (cfg.unit === 'utf8' ? 'UTF-8 字节' : 'GBK 字节');
+  $('#resStats').innerHTML =
+    '<div class="stat"><span class="k">字符数</span><span class="v">' + m.chars + '</span></div>' +
+    '<div class="stat"><span class="k">UTF-8 字节</span><span class="v">' + m.utf8 + '</span></div>' +
+    '<div class="stat"><span class="k">GBK 字节（估算）</span><span class="v">' + m.gbk + '</span></div>' +
+    '<div class="stat ' + (pass?'pass':'fail') + '"><span class="k">限制（' + unitName + '）</span><span class="v">' + actual + ' / ' + limit + '</span></div>';
+
+  var v = '';
+  if(cfg.typeCode === 'NONE') v = '<span class="tag tag-gray">无长度要求</span>';
+  else if(pass) v = '<span class="tag tag-green">✓ 符合长度要求</span>';
+  else v = '<span class="tag tag-red">✗ 超出 ' + over + ' 个' + unitName + '</span>';
+
+  var gbkWarn = '';
+  var un = gbkUnsupportedCount(r.value);
+  if(un > 0) gbkWarn = '<span class="tag tag-amber">含 ' + un + ' 个可能不在 GBK 内的字符（如 Emoji / 生僻字），GBK 字节为估算值</span>';
+
+  var byteTip = '';
+  if(!/^(digit|lower|upper|alpha|alnum)$/.test(cfg.charset) && m.chars > 0){
+    byteTip = '<span class="tag tag-blue">对照：同样 ' + m.chars + ' 个字符 = UTF-8 ' + m.utf8 + ' 字节 = GBK ' + m.gbk + ' 字节</span>';
+  }
+  $('#resVerdict').innerHTML = v + ' ' + gbkWarn + ' ' + byteTip;
+
+  $('#resultBox').classList.add('show');
+
+  if($('#fAutoRecord').checked && cfg.typeCode !== 'NONE'){
+    addRecord(lastResult);
+  }
+}
+
+function addRecord(rec){
+  var dup = records.filter(function(r){ return r.value === rec.value && r.fieldName === rec.fieldName && r.specRaw === rec.specRaw; })[0];
+  if(dup){ toast('已存在相同记录，未重复保存','warn'); return; }
+  records.push(rec);
+  enforceLimit();
+  saveRecords();
+  renderUsage();
+  renderRecords();
+}
+
+/* ============================================================
+   批量导入（整表粘贴 → 一键生成整批）
+   ============================================================ */
+var batchTasks = [];
+
+/* 判断一个单元格"像不像长度要求"，用于自动定位列 */
+function scoreSpecCell(s){
+  var t = normalizeSpec(s);
+  if(!t) return 0;
+  if(/^(--|—{1,2}|-{2,}|无|不限|无限制|n\/a|none)$/i.test(t)) return 2;
+  if(/^(vchar|varchar2?|nvarchar2?|char|anc|an|n|c|u?int|bigint|smallint|tinyint|unsigned\s+int|decimal|numeric|number|date|datetime|time)\s*[（(]?\s*\.{0,3}\s*\d+/i.test(t)) return 3;
+  if(/\d/.test(t) && t.length <= 26 && /[a-zA-Z(（.．]/.test(t)) return 1;
+  return 0;
+}
+
+/* Excel / Word / 网页复制的行：Tab 优先，其次 |，其次连续空格 */
+function splitRow(line){
+  var t = String(line == null ? '' : line).replace(/[\u00A0\u3000]/g,' ').trim();
+  if(!t) return [];
+  t = t.replace(/^[\s|]+|[\s|]+$/g,'');   /* 去掉 Markdown 表格首尾的竖线 */
+  var parts;
+  if(t.indexOf('\t') >= 0)      parts = t.split('\t');
+  else if(t.indexOf('|') >= 0)  parts = t.split(/\s*\|\s*/);
+  else if(/\s{2,}/.test(t))     parts = t.split(/\s{2,}/);
+  else return [t];
+  return parts.map(function(x){ return String(x).replace(/^[\s|]+|[\s|]+$/g,'').trim(); });
+}
+
+var HEAD_WORDS = /(数据项|字段|名称|长度|类型|格式|要求|说明|编码|代码|备注)/;
+function isHeaderRow(parts){
+  if(!parts || parts.length < 2) return false;
+  var hit = 0, i;
+  for(i=0;i<parts.length;i++){ if(HEAD_WORDS.test(parts[i])) hit++; }
+  if(hit < 2) return false;
+  for(i=0;i<parts.length;i++){ if(scoreSpecCell(parts[i]) > 0) return false; }
+  return true;
+}
+
+/* 每一列打分，取最像长度要求的那一列（同分时取靠右） */
+function detectSpecIndex(rows){
+  var n = 0, i, j;
+  rows.forEach(function(r){ if(r.length > n) n = r.length; });
+  if(!n) return 0;
+  var scores = [];
+  for(i=0;i<n;i++) scores.push(0);
+  rows.forEach(function(r){ for(j=0;j<n;j++){ scores[j] += scoreSpecCell(r[j]); } });
+  var best = 0, bv = -1;
+  for(i=n-1;i>=0;i--){ if(scores[i] > bv){ bv = scores[i]; best = i; } }
+  return best;
+}
+
+function headerIndex(headerRow, re){
+  for(var i=0;i<headerRow.length;i++){ if(re.test(headerRow[i])) return i; }
+  return -1;
+}
+
+function parseBatchTable(text){
+  var lines = String(text == null ? '' : text).split(/\r?\n/).map(function(x){ return x.trim(); }).filter(Boolean)
+    /* 剔除 Markdown 的分隔行 | --- | --- |（只在含竖线时才排，避免误删合法的「--」长度要求） */
+    .filter(function(l){ return !(/\||\+/.test(l) && /^[\s|:+=\-*]+$/.test(l)); });
+  var rows = lines.map(splitRow).filter(function(r){ return r.length && r.join('').trim(); });
+
+  var headerRow = null;
+  if(rows.length && isHeaderRow(rows[0])) headerRow = rows.shift();
+
+  var specIndex;
+  if(headerRow){
+    specIndex = headerIndex(headerRow, /长度|格式|要求|数据格式/);
+    if(specIndex < 0) specIndex = detectSpecIndex(rows.length ? rows : [headerRow]);
+  }else{
+    specIndex = detectSpecIndex(rows);
+  }
+
+  var idxCat = -1, idxSub = -1, idxField = -1;
+  if(headerRow){
+    idxSub   = headerIndex(headerRow, /细分|子类|二级/);
+    idxCat   = headerIndex(headerRow, /信息类型|大类|一级|分类/);
+    idxField = headerIndex(headerRow, /数据项名称|数据项|字段名称|字段|项目名称|名称/);
+    if(idxCat === idxSub) idxCat = -1;
+    if(idxField === idxCat || idxField === idxSub) idxField = -1;
+  }
+
+  var tasks = [];
+  rows.forEach(function(r){
+    var spec = (specIndex >= 0 && specIndex < r.length) ? r[specIndex] : (r[r.length-1] || '');
+    var category = '', subCategory = '', fieldName = '';
+    if(idxField >= 0 && idxField < r.length) fieldName = r[idxField] || '';
+    if(idxSub   >= 0 && idxSub   < r.length) subCategory = r[idxSub] || '';
+    if(idxCat   >= 0 && idxCat   < r.length) category = r[idxCat] || '';
+
+    var left = [], i;
+    for(i=0;i<r.length;i++){
+      /* 只取长度要求列左侧的非空列，且排除疑似序号（纯 1~4 位数字） */
+      if(i === specIndex || i === idxField) continue;
+      var v = String(r[i] == null ? '' : r[i]).trim();
+      if(!v || /^\d{1,4}$/.test(v)) continue;
+      left.push(v);
+    }
+
+    if(!fieldName){
+      /* 位置启发式：长度要求列左侧，从右往左依次是 数据项名称 / 细分 / 信息类型 */
+      if(left.length >= 1) fieldName = left[left.length-1];
+      if(left.length >= 2) subCategory = left[left.length-2];
+      if(left.length >= 3) category = left.slice(0, left.length-2).join(' / ');
+    }else if(!category && !subCategory){
+      /* 表头只标出了名称列时，左侧剩下的列补成 信息类型 / 细分 */
+      if(left.length >= 1) category = left[0];
+      if(left.length >= 2) subCategory = left[1];
+    }
+
+    var p = parseSpec(spec);
+    var t = {
+      sel:false,
+      category:category, subCategory:subCategory, fieldName:fieldName,
+      specRaw:normalizeSpec(spec),
+      typeCode:(p && p.typeCode) || '',
+      length:(p && p.length != null) ? p.length : null,
+      lengthMode:(p && p.lengthMode) || 'max',
+      charset:(p && p.charset) || 'cn',
+      status:'fail',
+      msg:(p && p.ok) ? '' : ((p && p.msg) ? p.msg : '未能识别长度要求')
+    };
+    if(p && p.ok && p.skip){ t.status = 'skip'; t.msg = '规范标注「--」，无长度要求'; }
+    else if(p && p.ok){ t.status = 'ok'; t.sel = true; }
+    tasks.push(t);
+  });
+
+  return { tasks:tasks, header:!!headerRow, specIndex:specIndex, rows:rows.length };
+}
+
+function showBMsg(cls, html){
+  var b = $('#bMsg');
+  b.className = 'parseBox show ' + cls;
+  b.innerHTML = html;
+}
+function hideBMsg(){ $('#bMsg').className = 'parseBox'; }
+
+function renderBatchStat(){
+  var list = batchTasks;
+  var ok = list.filter(function(t){ return t.status === 'ok'; }).length;
+  var skip = list.filter(function(t){ return t.status === 'skip'; }).length;
+  var fail = list.filter(function(t){ return t.status === 'fail'; }).length;
+  var selN = list.filter(function(t){ return t.sel && t.status === 'ok'; }).length;
+  $('#bStat').innerHTML = '共 <b>' + list.length + '</b> 项 · 可生成 <b>' + ok + '</b> · 已勾选 <b>' + selN + '</b>' +
+    (skip ? ' · 无长度要求 ' + skip : '') +
+    (fail ? ' · <span style="color:#c62828">未识别 ' + fail + '</span>' : '');
+}
+
+function renderBatch(){
+  var tb = $('#bBody'), list = batchTasks;
+  renderBatchStat();
+
+  if(!list.length){
+    tb.innerHTML = '';
+    $('#bEmpty').style.display = 'block';
+    $('#bEmpty').textContent = '先粘贴规范表，再点「解析成清单」';
+    return;
+  }
+  $('#bEmpty').style.display = 'none';
+  tb.innerHTML = list.map(function(t, i){
+    var tc = TYPE_COLOR[t.typeCode] || 'gray';
+    var st = t.status === 'ok'   ? '<span class="tag tag-green">已识别</span>'
+          :  t.status === 'skip' ? '<span class="tag tag-gray">无长度要求</span>'
+          :                        '<span class="tag tag-red">未识别</span>';
+    var cs = $$('#fCharset option').filter(function(o){ return o.value === t.charset; })[0];
+    return '<tr data-i="' + i + '">' +
+      '<td><input type="checkbox" class="bChk" data-i="' + i + '"' + (t.sel ? ' checked' : '') + '></td>' +
+      '<td class="dim" style="font-size:12px">' + (t.category ? esc(t.category) : '—') + '</td>' +
+      '<td class="dim" style="font-size:12px">' + (t.subCategory ? esc(t.subCategory) : '—') + '</td>' +
+      '<td>' + (t.fieldName ? esc(t.fieldName) : '<span class="dim">—</span>') + '</td>' +
+      '<td class="mono" style="font-size:11px">' + esc(t.specRaw || '') + '</td>' +
+      '<td><span class="tag tag-' + tc + '">' + esc(TYPE_LABEL[t.typeCode] || '—') + '</span></td>' +
+      '<td><input class="bLen" type="number" min="0" max="100000" data-i="' + i + '" value="' + (t.length == null ? '' : t.length) + '"' + (t.status === 'ok' ? '' : ' disabled') + '></td>' +
+      '<td class="dim" style="font-size:12px">' + esc(cs ? cs.textContent : t.charset) + '</td>' +
+      '<td>' + st + (t.msg ? '<br><span class="dim" style="font-size:11px">' + esc(t.msg) + '</span>' : '') + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function recKey(r){
+  return [r.specRaw, r.fieldName, r.boundary, r.value].join('\u0001');
+}
+
+function runBatch(){
+  var sel = batchTasks.filter(function(t){
+    return t.sel && t.status === 'ok' && t.length != null && t.length !== '' && !isNaN(parseInt(t.length, 10));
+  });
+  if(!sel.length){ toast('没有可生成的项 —— 请先解析并勾选数据项', 'warn'); return; }
+  var bds = $$('.bBd').filter(function(c){ return c.checked; }).map(function(c){ return c.value; });
+  if(!bds.length){ toast('请至少勾选一种边界形态', 'warn'); return; }
+
+  var unit = $('#bUnit').value, csMode = $('#bCharset').value, tpl = $('#bTemplate').value;
+  var batchName = $('#bBatchName').value.trim() || ('批次_' + stamp());
+  var batchId = 'b_' + Date.now() + '_' + ri(1000);
+
+  var seen = new Set();
+  records.forEach(function(r){ seen.add(recKey(r)); });
+
+  var added = 0, dup = 0;
+  sel.forEach(function(t){
+    bds.forEach(function(bd){
+      var cfg = {
+        typeCode:t.typeCode, length:parseInt(t.length, 10), lengthMode:t.lengthMode,
+        unit:unit, charset:(csMode === 'auto' ? (t.charset || 'cn') : csMode),
+        boundary:bd, template:tpl,
+        category:t.category, subCategory:t.subCategory, fieldName:t.fieldName, specRaw:t.specRaw
+      };
+      var r = buildValue(cfg);
+      var m = measure(r.value);
+      var actual = unit === 'char' ? m.chars : (unit === 'utf8' ? m.utf8 : m.gbk);
+      var rec = {
+        id:'r_' + Date.now() + '_' + ri(10000) + '_' + added,
+        createdAt:new Date().toISOString(),
+        batchId:batchId, batchName:batchName,
+        category:cfg.category, subCategory:cfg.subCategory, fieldName:cfg.fieldName,
+        specRaw:cfg.specRaw, typeCode:cfg.typeCode, length:cfg.length, lengthMode:cfg.lengthMode,
+        unit:unit, charset:cfg.charset, boundary:bd, template:tpl,
+        value:r.value, charCount:m.chars, utf8Bytes:m.utf8, gbkBytes:m.gbk,
+        pass:(cfg.typeCode === 'NONE') ? true : (actual <= cfg.length),
+        tags:[], note:'', starred:false
+      };
+      var k = recKey(rec);
+      if(seen.has(k)){ dup++; return; }
+      seen.add(k);
+      records.push(rec); added++;
+    });
+  });
+
+  enforceLimit(); saveRecords(); renderUsage();
+  $('#qBatch').value = batchId;
+  page = 1; renderRecords(); refreshExport();
+  var tbl = $('#recTable');
+  if(tbl && tbl.scrollIntoView) tbl.scrollIntoView({behavior:'smooth', block:'start'});
+  toast('批次「' + batchName + '」生成完成：新增 ' + added + ' 条' + (dup ? '，已跳过重复 ' + dup + ' 条' : ''), 'ok');
+}
+
+/* ============================================================
+   记录区
+   ============================================================ */
+var selected = new Set();
+var page = 1, pageSize = 50;
+
+function allTags(){
+  var set = new Set();
+  records.forEach(function(r){ (r.tags||[]).forEach(function(t){ set.add(t); }); });
+  return Array.from(set).sort();
+}
+
+function batchList(){
+  var map = {}, order = [];
+  records.forEach(function(r){
+    if(!r.batchId) return;
+    if(!map[r.batchId]){ map[r.batchId] = { id:r.batchId, name:r.batchName || r.batchId, count:0, at:r.createdAt }; order.push(r.batchId); }
+    map[r.batchId].count++;
+    if(r.createdAt > map[r.batchId].at) map[r.batchId].at = r.createdAt;
+  });
+  return order.map(function(id){ return map[id]; }).sort(function(a,b){ return a.at < b.at ? 1 : -1; });
+}
+
+function filtered(){
+  var kw = $('#qKeyword').value.trim().toLowerCase();
+  var t = $('#qType').value, p = $('#qPass').value, tg = $('#qTag').value, st = $('#qStar').value;
+  var bt = $('#qBatch') ? $('#qBatch').value : '';
+  var list = records.filter(function(r){
+    if(t && r.typeCode !== t) return false;
+    if(p === '1' && !r.pass) return false;
+    if(p === '0' && r.pass) return false;
+    if(tg && (r.tags||[]).indexOf(tg) < 0) return false;
+    if(st === '1' && !r.starred) return false;
+    if(bt && r.batchId !== bt) return false;
+    if(kw){
+      var hay = [r.value, r.fieldName, r.specRaw, r.note, r.category, r.subCategory, r.batchName, (r.tags||[]).join(' '), r.typeCode].join(' ').toLowerCase();
+      if(hay.indexOf(kw) < 0) return false;
+    }
+    return true;
+  });
+  var s = $('#qSort').value;
+  if(s === 'new')      list.sort(function(a,b){ return b.createdAt < a.createdAt ? -1 : 1; });
+  else if(s === 'old') list.sort(function(a,b){ return a.createdAt < b.createdAt ? -1 : 1; });
+  else if(s === 'lenDesc') list.sort(function(a,b){ return (b.length||0) - (a.length||0); });
+  else if(s === 'lenAsc')  list.sort(function(a,b){ return (a.length||0) - (b.length||0); });
+  else if(s === 'name')    list.sort(function(a,b){ return String(a.fieldName||'').localeCompare(String(b.fieldName||''),'zh'); });
+  return list;
+}
+
+function hl(text, kw){
+  var s = String(text==null?'':text);
+  if(!kw) return esc(s);
+  var i = s.toLowerCase().indexOf(kw.toLowerCase());
+  if(i < 0) return esc(s);
+  return esc(s.slice(0,i)) + '<mark>' + esc(s.slice(i, i+kw.length)) + '</mark>' + esc(s.slice(i+kw.length));
+}
+
+function renderRecords(){
+  var list = filtered();
+  var kw = $('#qKeyword').value.trim();
+  $('#recCount').textContent = '共 ' + records.length + ' 条 · 当前筛选 ' + list.length + ' 条';
+
+  var types = Array.from(new Set(records.map(function(r){return r.typeCode;}))).filter(Boolean).sort();
+  var ts = $('#qType');
+  var cur = ts.value;
+  ts.innerHTML = '<option value="">全部</option>' + types.map(function(t){
+    return '<option value="'+t+'">'+TYPE_LABEL[t]+'</option>';
+  }).join('');
+  ts.value = cur;
+  var tg = $('#qTag');
+  var curt = tg.value;
+  tg.innerHTML = '<option value="">全部</option>' + allTags().map(function(t){ return '<option>'+esc(t)+'</option>'; }).join('');
+  tg.value = curt;
+
+  var qb = $('#qBatch');
+  var curb = qb.value;
+  var bl = batchList();
+  qb.innerHTML = '<option value="">全部（' + records.length + ' 条）</option>' + bl.map(function(b){
+    return '<option value="' + esc(b.id) + '">' + esc(b.name) + '（' + b.count + ' 条）</option>';
+  }).join('');
+  qb.value = curb;
+  if(curb && !bl.some(function(b){ return b.id === curb; })) qb.value = '';
+  $('#btnDelBatch').style.display = qb.value ? '' : 'none';
+
+  var pages = Math.max(1, Math.ceil(list.length / pageSize));
+  if(page > pages) page = pages;
+  var start = (page-1) * pageSize;
+  var slice = list.slice(start, start + pageSize);
+
+  var tb = $('#recBody');
+  if(!slice.length){
+    tb.innerHTML = '';
+    $('#recEmpty').style.display = 'block';
+    $('#recEmpty').textContent = records.length ? '没有符合条件的记录 —— 试试清空筛选条件' : '还没有记录 —— 在上方生成一条';
+  }else{
+    $('#recEmpty').style.display = 'none';
+    tb.innerHTML = slice.map(function(r){
+      var i = start + slice.indexOf(r);
+      var tc = TYPE_COLOR[r.typeCode] || 'gray';
+      return '<tr data-id="'+r.id+'">' +
+        '<td><input type="checkbox" class="rowChk" data-id="'+r.id+'"'+(selected.has(r.id)?' checked':'')+'></td>' +
+        '<td class="dim" style="font-size:12px">'+fmtTime(r.createdAt)+'</td>' +
+        '<td>'+(r.fieldName ? hl(r.fieldName, kw) : '<span class="dim">—</span>')+
+             (r.category?'<br><span class="dim" style="font-size:11px">'+hl(r.category,kw)+'</span>':'')+
+             (r.batchName?'<br><span class="dim" style="font-size:11px">批次：'+hl(r.batchName,kw)+'</span>':'')+'</td>' +
+        '<td class="mono" style="font-size:11px">'+hl(r.specRaw, kw)+'</td>' +
+        '<td><span class="tag tag-'+tc+'">'+esc(TYPE_LABEL[r.typeCode]||'')+'</span></td>' +
+        '<td class="nums">'+r.length+'<br><span class="c" style="font-size:11px">'+(r.lengthMode==='max'?'上限':'固定')+'</span>'+
+             (r.boundary?'<br><span class="c" style="font-size:11px">'+esc(BOUNDARY_LABEL[r.boundary]||r.boundary)+'</span>':'')+'</td>' +
+        '<td class="mono">'+hl(r.value, kw)+'</td>' +
+        '<td class="nums"><span class="n">'+r.charCount+' 字符</span><span class="n u">'+r.utf8Bytes+' B</span><span class="n g">'+r.gbkBytes+' B</span></td>' +
+        '<td>'+(r.pass?'<span class="tag tag-green">通过</span>':'<span class="tag tag-red">超出</span>')+'</td>' +
+        '<td>'+((r.tags||[]).length ? (r.tags||[]).map(function(t){return '<span class="tag tag-blue" style="margin:1px">'+esc(t)+'</span>';}).join('') : '<span class="dim">—</span>')+
+             (r.note?'<br><span class="dim" style="font-size:11px">'+esc(r.note)+'</span>':'')+'</td>' +
+        '<td class="ops">' +
+          '<button class="link" data-act="copy" data-id="'+r.id+'">复制值</button> ' +
+          '<button class="link" data-act="star" data-id="'+r.id+'">'+(r.starred?'★':'☆')+'</button> ' +
+          '<button class="link" data-act="note" data-id="'+r.id+'">备注</button> ' +
+          '<button class="link" style="color:#c62828" data-act="del" data-id="'+r.id+'">删除</button>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  var pg = $('#pager');
+  if(pages <= 1){ pg.innerHTML = ''; }
+  else{
+    var html = '<span class="selInfo">第 '+page+' / '+pages+' 页</span>';
+    html += '<button class="pg" data-p="'+(page-1)+'"'+(page===1?' disabled':'')+'>上一页</button>';
+    var from = Math.max(1, page-2), to = Math.min(pages, from+4);
+    from = Math.max(1, to-4);
+    for(var i=from;i<=to;i++) html += '<button class="pg'+(i===page?' on':'')+'" data-p="'+i+'">'+i+'</button>';
+    html += '<button class="pg" data-p="'+(page+1)+'"'+(page===pages?' disabled':'')+'>下一页</button>';
+    pg.innerHTML = html;
+  }
+
+  var n = selected.size;
+  $('#selInfo').innerHTML = n ? '已选中 <b>'+n+'</b> 条' : '未选中任何记录（导出将使用当前筛选结果）';
+  $('#chkAll').checked = slice.length > 0 && slice.every(function(r){ return selected.has(r.id); });
+}
+
+/* ============================================================
+   导出：清洗 / 拼接 / 自检
+   ============================================================ */
+function sanitizeCell(v, opts){
+  var s = (v == null) ? '' : String(v);
+  s = s.replace(/[\u200B-\u200D\u2060\uFEFF]/g, '');      /* 零宽字符与 BOM */
+  s = s.replace(/[\u00A0\u3000]/g, ' ');                   /* 不换行空格 / 全角空格 -> 半角 */
+  s = s.replace(/[\t\r\n]+/g, ' ');                        /* 制表符与换行 -> 单空格（避免串列断行） */
+  if(opts.wash === 'strict'){
+    s = s.replace(/ {2,}/g, ' ');
+    s = s.trim();
+  }
+  return s;
+}
+
+function needsTextGuard(s){
+  if(!/^[0-9]+$/.test(s)) return false;
+  if(s.length >= 9) return true;          /* 长数字：科学计数法风险 */
+  if(/^0/.test(s) && s.length > 1) return true;  /* 前导零 */
+  return false;
+}
+
+function buildMatrix(rows, cols){
+  var cm = {};
+  COLUMNS.forEach(function(c){ cm[c.key] = c; });
+  var out = [];
+  if(exportCfg.header) out.push(cols.map(function(k){ return cm[k].label; }));
+  rows.forEach(function(r, i){
+    out.push(cols.map(function(k){ return cm[k].get(r, i); }));
+  });
+  return out;
+}
+function washMatrix(matrix){
+  return matrix.map(function(row){ return row.map(function(c){ return sanitizeCell(c, exportCfg); }); });
+}
+function toTSV(matrix){
+  return matrix.map(function(r){ return r.join('\t'); }).join('\r\n');
+}
+function toCSV(matrix, bom){
+  var body = matrix.map(function(r){
+    return r.map(function(c){
+      if(/[",\r\n]/.test(c)) return '"' + c.replace(/"/g,'""') + '"';
+      return c;
+    }).join(',');
+  }).join('\r\n');
+  return (bom ? '\uFEFF' : '') + body;
+}
+function toPlain(matrix){
+  var cm = {};
+  COLUMNS.forEach(function(c){ cm[c.key] = c; });
+  var vi = exportCfg.cols.indexOf('value');
+  if(vi < 0) return toTSV(matrix);
+  return matrix.map(function(r){ return r[vi]; }).join('\r\n');
+}
+function toMarkdown(matrix){
+  if(!matrix.length) return '';
+  var head = matrix[0];
+  var sep = head.map(function(){ return '---'; });
+  var rows = [head, sep].concat(matrix.slice(1));
+  return rows.map(function(r){ return '| ' + r.map(function(c){ return c.replace(/\|/g,'\\|'); }).join(' | ') + ' |'; }).join('\r\n');
+}
+function toHTMLTable(matrix){
+  var rows = matrix.map(function(r, ri){
+    var tag = ri === 0 ? 'th' : 'td';
+    var cells = r.map(function(c){
+      var e = esc(c);
+      if(ri === 0) return '<' + tag + '>' + e + '</' + tag + '>';
+      if(exportCfg.guard && needsTextGuard(c)) return '<' + tag + ' style="mso-number-format:\'\\@\'">' + e + '</' + tag + '>';
+      return '<' + tag + '>' + e + '</' + tag + '>';
+    }).join('');
+    return '<tr>' + cells + '</tr>';
+  }).join('');
+  return '<table border="1" cellspacing="0" cellpadding="3" style="border-collapse:collapse">' + rows + '</table>';
+}
+
+function auditMatrix(matrix){
+  var issues = [];
+  matrix.forEach(function(row, ri){
+    row.forEach(function(cell, ci){
+      var s = String(cell == null ? '' : cell);
+      if(!s) return;
+      var pb = [];
+      if(s !== s.trim()) pb.push('首尾空白');
+      if(/[\u00A0]/.test(s)) pb.push('不换行空格 U+00A0');
+      if(/[\u3000]/.test(s)) pb.push('全角空格 U+3000');
+      if(/[\u200B-\u200D\u2060\uFEFF]/.test(s)) pb.push('零宽/BOM 字符');
+      if(/[\t]/.test(s)) pb.push('制表符（会串列）');
+      if(/[\r\n]/.test(s)) pb.push('换行（会断行）');
+      if(pb.length) issues.push({ r:ri+1, c:ci+1, text:s, probs:pb });
+    });
+  });
+  return issues;
+}
+
+function exportRows(){
+  var list = filtered().filter(function(r){ return selected.has(r.id); });
+  if(!list.length) list = filtered();
+  return list;
+}
+
+function renderExportPanel(){
+  var cm = {};
+  COLUMNS.forEach(function(c){ cm[c.key] = c; });
+  $('#colList').innerHTML = COLUMNS.map(function(c){
+    var on = exportCfg.cols.indexOf(c.key) >= 0;
+    return '<label><input type="checkbox" class="colChk" value="'+c.key+'"'+(on?' checked':'')+'> '+esc(c.label)+'</label>';
+  }).join('');
+  $('#colCount').textContent = exportCfg.cols.length + ' / ' + COLUMNS.length;
+
+  var rows = exportRows();
+  $('#exportScope').textContent = rows.length + ' 行 × ' + exportCfg.cols.length + ' 列' + (selected.size ? '（来自已选中记录）' : '（来自当前筛选结果）');
+
+  var matrix = washMatrix(buildMatrix(rows, exportCfg.cols));
+  $('#exportPreview').textContent = matrix.slice(0, 6).map(function(r){
+    return r.map(function(c){ return c.length > 24 ? c.slice(0,24) + '…' : c; }).join(' | ');
+  }).join('\n') || '（无数据）';
+
+  var box = $('#auditBox');
+  if(!exportCfg.audit){ box.innerHTML = '<div class="ok">自检已关闭</div>'; return; }
+  var issues = auditMatrix(matrix);
+  if(!issues.length){
+    box.innerHTML = '<div class="ok">✓ 自检通过：无首尾空白、无不换行空格 / 全角空格 / 零宽字符 / 制表符 / 换行</div>';
+  }else{
+    box.innerHTML = '<div class="bad"><b>发现 ' + issues.length + ' 处可能导致 Excel 变形的问题：</b><br>' +
+      issues.slice(0, 12).map(function(x){
+        return '行' + x.r + ' 列' + x.c + '：' + esc(x.probs.join('、')) + ' —— 「' + esc(x.text.slice(0,30)) + '」';
+      }).join('<br>') +
+      (issues.length > 12 ? '<br>…还有 ' + (issues.length-12) + ' 处' : '') +
+      '<br><br>处理：改用「标准清洗」可自动清除；或把清洗强度改为「仅剔除不可见字符」以保留空格类测试数据。</div>';
+  }
+}
+
+/* ---------- 复制 ---------- */
+function fallbackCopy(text){
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed'; ta.style.left = '-9999px'; ta.style.top = '0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  var ok = false;
+  try{ ok = document.execCommand('copy'); }catch(e){}
+  document.body.removeChild(ta);
+  return ok;
+}
+function fallbackCopyRich(html){
+  var div = document.createElement('div');
+  div.contentEditable = 'true';
+  div.style.position = 'fixed'; div.style.left = '-9999px'; div.style.top = '0';
+  div.innerHTML = html;
+  document.body.appendChild(div);
+  var range = document.createRange(); range.selectNodeContents(div);
+  var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+  var ok = false;
+  try{ ok = document.execCommand('copy'); }catch(e){}
+  sel.removeAllRanges();
+  document.body.removeChild(div);
+  return ok;
+}
+function showManualCopy(text, title){
+  var m = document.createElement('div');
+  m.className = 'modal narrow show auto';
+  m.innerHTML = '<div class="modalHead"><h3>' + esc(title||'请手动复制') + '</h3><button class="x" data-close>×</button></div>' +
+    '<div class="modalBody"><p class="note">浏览器不允许自动写入剪贴板，请手动全选下方内容后复制。</p>' +
+    '<textarea rows="10" style="width:100%" readonly>' + esc(text) + '</textarea></div>' +
+    '<div class="modalFoot"><span></span><div class="btns"><button class="primary" data-close>好的</button></div></div>';
+  document.body.appendChild(m);
+  $('#mask').classList.add('show');
+  m.querySelector('[data-close]').onclick = function(){
+    document.body.removeChild(m);
+    if(!$('.modal.show')) $('#mask').classList.remove('show');
+  };
+}
+function copyPlainText(text, okMsg){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){
+      toast(okMsg || '已复制', 'ok');
+    }, function(){
+      if(fallbackCopy(text)) toast(okMsg || '已复制', 'ok');
+      else showManualCopy(text, '请手动复制');
+    });
+  }else if(fallbackCopy(text)){
+    toast(okMsg || '已复制', 'ok');
+  }else{
+    showManualCopy(text, '请手动复制');
+  }
+}
+function copyExcel(plain, html){
+  var done = function(){ toast('已复制 —— 到 Excel / WPS 里直接 Ctrl+V 即可（按列自动分列，不会多空格）', 'ok'); };
+  if(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem){
+    try{
+      var item = new ClipboardItem({
+        'text/plain': new Blob([plain], {type:'text/plain'}),
+        'text/html':  new Blob([html],  {type:'text/html'})
+      });
+      navigator.clipboard.write([item]).then(done, function(){
+        if(fallbackCopyRich(html) || fallbackCopy(plain)) done();
+        else showManualCopy(plain, '请手动复制（TSV 文本）');
+      });
+      return;
+    }catch(e){}
+  }
+  if(fallbackCopyRich(html)){ done(); return; }
+  if(fallbackCopy(plain)){ done(); return; }
+  showManualCopy(plain, '请手动复制（TSV 文本）');
+}
+
+function download(name, text, mime){
+  var blob = new Blob([text], {type:(mime||'text/plain') + ';charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); document.body.removeChild(a); }, 200);
+  toast('已下载：' + name, 'ok');
+}
+
+/* ============================================================
+   Toast
+   ============================================================ */
+function toast(msg, type){
+  var d = document.createElement('div');
+  d.className = 'toast ' + (type || 'info');
+  d.textContent = msg;
+  $('#toasts').appendChild(d);
+  setTimeout(function(){
+    d.style.transition = 'opacity .3s'; d.style.opacity = '0';
+    setTimeout(function(){ if(d.parentNode) d.parentNode.removeChild(d); }, 320);
+  }, type === 'bad' ? 4200 : 2400);
+}
+
+/* ============================================================
+   事件绑定
+   ============================================================ */
+function initCharsetOptions(){
+  var opts = $$('#fCharset option').map(function(o){ return '<option value="'+o.value+'">'+o.textContent+'</option>'; }).join('');
+  $('#sCharset').innerHTML = opts;
+  $('#sCharset').value = settings.charset;
+}
+
+function refreshExport(){
+  if($('#modalExport').classList.contains('show')) renderExportPanel();
+}
+
+function getRecordsForExport(){
+  return exportRows();
+}
+
+/* ---------- 生成器 ---------- */
+$('#btnParse').onclick = smartFill;
+$('#btnPasteClear').onclick = function(){ $('#specPaste').value = ''; hideParse(); };
+$('#btnGen').onclick = doGenerate;
+$('#btnGenAgain').onclick = doGenerate;
+$('#fShowInvisible').onchange = function(){ if(lastResult) doGenerate(); };
+$('#fType').onchange = function(){
+  var t = this.value;
+  $('#fCharset').value = TYPE_DEFAULT_CHARSET[t] || 'cn';
+  $('#fMode').value = TYPE_DEFAULT_MODE[t] || 'max';
+};
+$('#btnCopyValue').onclick = function(){
+  if(!lastResult) return;
+  copyPlainText(lastResult.value, '已复制生成的内容');
+};
+$('#btnCopyRow').onclick = function(){
+  if(!lastResult) return;
+  var r = lastResult;
+  var row = [r.category, r.subCategory, r.fieldName, r.specRaw, TYPE_LABEL[r.typeCode], r.length, r.value, r.charCount].join('\t');
+  copyPlainText(row, '已复制整行（TSV），可直接粘到 Excel');
+};
+$('#btnSaveRecord').onclick = function(){
+  if(!lastResult){ toast('请先生成','warn'); return; }
+  lastResult.id = 'r_' + Date.now() + '_' + ri(1000);
+  lastResult.createdAt = new Date().toISOString();
+  records.push(lastResult);
+  enforceLimit(); saveRecords(); renderUsage(); renderRecords();
+  toast('已存入记录','ok');
+};
+
+/* ---------- Tab ---------- */
+$$('.tab').forEach(function(b){
+  b.onclick = function(){
+    $$('.tab').forEach(function(x){ x.classList.remove('active'); });
+    b.classList.add('active');
+    $$('[data-pane]').forEach(function(p){ p.classList.add('hidden'); });
+    $('[data-pane="' + b.dataset.tab + '"]').classList.remove('hidden');
+  };
+});
+
+/* ---------- 批量导入 ---------- */
+var BATCH_DEMO = [
+  '信息类型\t信息类型细分\t数据项名称\t长度要求',
+  '个人基本信息\t身份信息\t姓名\tvchar（180）byte',
+  '个人基本信息\t身份信息\t证件类型\tN2',
+  '个人基本信息\t身份信息\t证件号码\tANC..18',
+  '个人基本信息\t身份信息\t手机号码\tN11',
+  '个人基本信息\t身份信息\t性别\tN1',
+  '个人基本信息\t职业信息\t工作单位\tvchar（180）byte',
+  '个人基本信息\t居住地址\t居住地址\tvchar（180）byte',
+  '信贷交易信息\t基本信息\t发放日期\tN8',
+  '信贷交易信息\t基本信息\t到期日期\tN8',
+  '信贷交易信息\t基本信息\t合同金额\tdecimal(18,2)',
+  '信贷交易信息\t基本信息\t账户状态\tN1',
+  '信贷交易信息\t基本信息\t数据发生机构名称\tvchar（180）byte',
+  '查询记录\t查询记录\t查询日期\tN8',
+  '查询记录\t查询记录\t查询原因\tN2',
+  '公共信息明细\t欠税记录\t欠税总额\tdecimal(18,2)',
+  '公共信息明细\t参保信息\t是否参保证明\t--'
+].join('\n');
+
+$('#btnBatchParse').onclick = function(){
+  var txt = $('#bPaste').value;
+  if(!txt.trim()){ showBMsg('err','请先粘贴规范表内容（也可以先点「填示例」看效果）'); return; }
+  var res = parseBatchTable(txt);
+  batchTasks = res.tasks;
+  renderBatch();
+  var ok   = batchTasks.filter(function(t){ return t.status === 'ok'; }).length;
+  var skip = batchTasks.filter(function(t){ return t.status === 'skip'; }).length;
+  var fail = batchTasks.filter(function(t){ return t.status === 'fail'; }).length;
+  var msg = '解析完成：共 <b>' + batchTasks.length + '</b> 行' + (res.header ? '（已自动跳过表头）' : '') +
+            ' · 可生成 <b>' + ok + '</b> · 无长度要求 ' + skip + ' · 未识别 <b>' + fail + '</b>';
+  msg += '<br>「长度要求」取的是第 <b>' + (res.specIndex + 1) + '</b> 列。如果取错了列或某一行没识别出来，直接在下方表格里改「长度」即可。';
+  if(fail) msg += '<br><span style="color:#791F1F">未识别的行默认不勾选，不会参与生成。</span>';
+  showBMsg(fail ? 'warn' : 'ok', msg);
+};
+$('#btnBatchDemo').onclick = function(){ $('#bPaste').value = BATCH_DEMO; hideBMsg(); toast('已填入示例，点「解析成清单」试试','ok'); };
+$('#btnBatchClear').onclick = function(){
+  $('#bPaste').value = ''; batchTasks = []; hideBMsg(); renderBatch();
+};
+$('#bSelAll').onchange = function(){
+  var on = this.checked;
+  batchTasks.forEach(function(t){ if(t.status === 'ok') t.sel = on; });
+  renderBatch();
+};
+$('#btnBSelOk').onclick = function(){
+  batchTasks.forEach(function(t){ t.sel = (t.status === 'ok'); });
+  $('#bSelAll').checked = true;
+  renderBatch();
+};
+/* 局部更新，避免整表重绘导致滚动跳回顶部 */
+function updateBatchRow(i){
+  var t = batchTasks[i];
+  var tr = $('#bBody').querySelector('tr[data-i="' + i + '"]');
+  if(!tr) return;
+  var chk = tr.querySelector('.bChk');
+  if(chk) chk.checked = !!t.sel;
+  var len = tr.querySelector('input.bLen');
+  if(len && len.value !== String(t.length == null ? '' : t.length)) len.value = (t.length == null ? '' : t.length);
+  if(len) len.disabled = (t.status !== 'ok');
+  if(tr.children.length > 8){
+    tr.children[8].innerHTML = (t.status === 'ok' ? '<span class="tag tag-green">已识别</span>' : '<span class="tag tag-gray">无长度要求</span>') +
+      (t.msg ? '<br><span class="dim" style="font-size:11px">' + esc(t.msg) + '</span>' : '');
+  }
+  renderBatchStat();
+}
+$('#bBody').onclick = function(e){
+  var chk = e.target.closest('.bChk');
+  if(!chk) return;
+  var i = parseInt(chk.dataset.i, 10);
+  var t = batchTasks[i];
+  if(t && t.status === 'ok'){
+    t.sel = chk.checked;
+    renderBatchStat();
+  }else{
+    chk.checked = false;
+    toast('该项未识别出长度要求 —— 请先在「长度」格填一个数字', 'warn');
+  }
+};
+$('#bBody').onchange = function(e){
+  var inp = e.target.closest('input.bLen');
+  if(!inp) return;
+  var i = parseInt(inp.dataset.i, 10);
+  var t = batchTasks[i];
+  if(!t) return;
+  var n = parseInt(inp.value, 10);
+  if(isNaN(n) || n < 0){ inp.value = (t.length == null ? '' : t.length); return; }
+  t.length = n;
+  if(t.status !== 'ok'){
+    t.status = 'ok'; t.sel = true; t.msg = '手工修正长度';
+  }
+  updateBatchRow(i);
+};
+$('#btnBatchGen').onclick = runBatch;
+
+/* ---------- 记录区 ---------- */
+$('#qKeyword').oninput = function(){ page = 1; renderRecords(); refreshExport(); };
+['#qType','#qPass','#qTag','#qStar','#qBatch','#qSort'].forEach(function(s){
+  $(s).onchange = function(){ page = 1; renderRecords(); refreshExport(); };
+});
+$('#qPageSize').onchange = function(){ pageSize = parseInt(this.value,10) || 50; page = 1; renderRecords(); };
+$('#btnClearFilter').onclick = function(){
+  $('#qKeyword').value = ''; $('#qType').value = ''; $('#qPass').value = '';
+  $('#qTag').value = ''; $('#qStar').value = ''; $('#qSort').value = 'new';
+  $('#qBatch').value = '';
+  page = 1; renderRecords(); refreshExport();
+};
+$('#btnDelBatch').onclick = function(){
+  var id = $('#qBatch').value;
+  if(!id){ toast('请先在「批次」下拉里选择一个批次','warn'); return; }
+  var list = records.filter(function(r){ return r.batchId === id; });
+  if(!list.length){ toast('该批次下没有记录','warn'); return; }
+  var nm = list[0].batchName || id;
+  if(!confirm('确定删除批次「' + nm + '」的全部 ' + list.length + ' 条记录？\n此操作不可恢复，建议先导出备份。')) return;
+  records = records.filter(function(r){ return r.batchId !== id; });
+  selected.clear();
+  $('#qBatch').value = '';
+  saveRecords(); renderUsage(); renderRecords(); refreshExport();
+  toast('已删除批次「' + nm + '」','ok');
+};
+$('#btnSelFiltered').onclick = function(){
+  filtered().forEach(function(r){ selected.add(r.id); });
+  renderRecords(); refreshExport();
+};
+$('#btnSelNone').onclick = function(){ selected.clear(); renderRecords(); refreshExport(); };
+$('#chkAll').onchange = function(){
+  var list = filtered();
+  var start = (page-1)*pageSize;
+  var slice = list.slice(start, start+pageSize);
+  slice.forEach(function(r){ if(this.checked) selected.add(r.id); else selected.delete(r.id); }, this);
+  renderRecords(); refreshExport();
+};
+$('#pager').onclick = function(e){
+  var b = e.target.closest('button[data-p]');
+  if(!b || b.disabled) return;
+  page = parseInt(b.dataset.p, 10);
+  renderRecords();
+};
+$('#recBody').onclick = function(e){
+  var chk = e.target.closest('.rowChk');
+  if(chk){
+    if(chk.checked) selected.add(chk.dataset.id); else selected.delete(chk.dataset.id);
+    renderRecords(); refreshExport();
+    return;
+  }
+  var b = e.target.closest('button[data-act]');
+  if(!b) return;
+  var id = b.dataset.id;
+  var r = records.filter(function(x){ return x.id === id; })[0];
+  if(!r) return;
+  var act = b.dataset.act;
+  if(act === 'copy') copyPlainText(r.value, '已复制');
+  else if(act === 'star'){ r.starred = !r.starred; saveRecords(); renderRecords(); }
+  else if(act === 'note'){ openNote(r); }
+  else if(act === 'del'){
+    if(confirm('确定删除这条记录？')){
+      records = records.filter(function(x){ return x.id !== id; });
+      selected.delete(id);
+      saveRecords(); renderUsage(); renderRecords(); refreshExport();
+    }
+  }
+};
+$('#btnDelSel').onclick = function(){
+  if(!selected.size){ toast('请先勾选要删除的记录','warn'); return; }
+  if(!confirm('确定删除选中的 ' + selected.size + ' 条记录？')) return;
+  records = records.filter(function(r){ return !selected.has(r.id); });
+  selected.clear();
+  saveRecords(); renderUsage(); renderRecords(); refreshExport();
+  toast('已删除','ok');
+};
+$('#btnExportSel').onclick = openExport;
+
+/* ---------- 备注 ---------- */
+var editing = null;
+function openNote(r){
+  editing = r;
+  $('#noteTags').value = (r.tags||[]).join(',');
+  $('#noteText').value = r.note || '';
+  openModal('#modalNote');
+}
+$('#btnSaveNote').onclick = function(){
+  if(!editing){ closeModals(); return; }
+  editing.tags = $('#noteTags').value.split(/[,，]/).map(function(x){return x.trim();}).filter(Boolean);
+  editing.note = $('#noteText').value;
+  saveRecords(); renderRecords(); refreshExport();
+  closeModals();
+  toast('已保存','ok');
+};
+$('#btnCancelNote').onclick = closeModals;
+
+/* ---------- 弹窗 ---------- */
+function openModal(sel){
+  $('#mask').classList.add('show');
+  $(sel).classList.add('show');
+}
+function closeModals(){
+  $('.modal').classList.remove('show');
+  $$('.modal').forEach(function(m){ m.classList.remove('show'); });
+  $$('.modal.auto').forEach(function(m){ m.parentNode.removeChild(m); });
+  $('#mask').classList.remove('show');
+}
+$('#mask').onclick = closeModals;
+$$('[data-close]').forEach(function(b){ b.onclick = closeModals; });
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeModals(); });
+
+/* ---------- 导出中心 ---------- */
+function openExport(){
+  renderExportPanel();
+  openModal('#modalExport');
+}
+$('#btnExportCenter').onclick = openExport;
+$('#colList').onchange = function(e){
+  if(!e.target.classList.contains('colChk')) return;
+  var v = e.target.value;
+  var i = exportCfg.cols.indexOf(v);
+  if(e.target.checked && i < 0) exportCfg.cols.push(v);
+  if(!e.target.checked && i >= 0) exportCfg.cols.splice(i,1);
+  exportCfg.cols = COLUMNS.filter(function(c){ return exportCfg.cols.indexOf(c.key) >= 0; }).map(function(c){ return c.key; });
+  saveExportCfg(); renderExportPanel();
+};
+$('#btnColAll').onclick = function(){ exportCfg.cols = COLUMNS.map(function(c){return c.key;}); saveExportCfg(); renderExportPanel(); };
+$('#btnColDefault').onclick = function(){ exportCfg.cols = DEFAULT_COLS.slice(); saveExportCfg(); renderExportPanel(); };
+['optGuard','optBom','optHeader','optAudit'].forEach(function(id){
+  $('#'+id).onchange = function(){
+    exportCfg[id.slice(3).toLowerCase()] = this.checked;
+    saveExportCfg(); renderExportPanel();
+  };
+});
+$$('input[name="wash"]').forEach(function(r){
+  r.onchange = function(){ if(this.checked){ exportCfg.wash = this.value; saveExportCfg(); renderExportPanel(); } };
+});
+
+function currentMatrix(){
+  return washMatrix(buildMatrix(getRecordsForExport(), exportCfg.cols));
+}
+$('#btnCopyExcel').onclick = function(){
+  var m = currentMatrix();
+  if(!m.length){ toast('没有可导出的数据','warn'); return; }
+  copyExcel(toTSV(m), toHTMLTable(m));
+};
+$('#btnCopyPlain').onclick = function(){
+  var m = currentMatrix();
+  if(!m.length){ toast('没有可导出的数据','warn'); return; }
+  copyPlainText(toTSV(m), '已复制 TSV，可直接粘贴到 Excel');
+};
+$('#btnCopyMd').onclick = function(){
+  var m = currentMatrix();
+  if(!m.length){ toast('没有可导出的数据','warn'); return; }
+  copyPlainText(toMarkdown(m), '已复制 Markdown 表格');
+};
+$('#btnDlCsv').onclick = function(){
+  var m = currentMatrix();
+  if(!m.length){ toast('没有可导出的数据','warn'); return; }
+  download('字符长度数据_' + stamp() + '.csv', toCSV(m, exportCfg.bom), 'text/csv');
+};
+$('#btnDlTxt').onclick = function(){
+  var m = currentMatrix();
+  if(!m.length){ toast('没有可导出的数据','warn'); return; }
+  download('字符长度数据_' + stamp() + '.txt', toTSV(m), 'text/plain');
+};
+
+/* ---------- 设置 ---------- */
+$('#btnSettings').onclick = function(){
+  $('#sUnit').value = settings.unit;
+  $('#sCharset').value = settings.charset;
+  $('#sAutoRecord').checked = !!settings.autoRecord;
+  $('#sLimit').value = settings.limit;
+  openModal('#modalSettings');
+};
+$('#btnSaveSettings').onclick = function(){
+  settings.unit = $('#sUnit').value;
+  settings.charset = $('#sCharset').value;
+  settings.autoRecord = $('#sAutoRecord').checked;
+  settings.limit = parseInt($('#sLimit').value, 10) || 2000;
+  saveSettings();
+  $('#fUnit').value = settings.unit;
+  $('#fCharset').value = settings.charset;
+  $('#fAutoRecord').checked = settings.autoRecord;
+  enforceLimit(); renderUsage(); renderRecords();
+  closeModals();
+  toast('设置已保存','ok');
+};
+
+/* ---------- 备份 ---------- */
+$('#btnBackup').onclick = function(){
+  $('#backupInfo').textContent = '当前共 ' + records.length + ' 条记录，占用约 ' + (storageUsage().bytes/1024).toFixed(1) + ' KB';
+  openModal('#modalBackup');
+};
+$('#btnExportJson').onclick = function(){
+  download('字符长度记录备份_' + stamp() + '.json', JSON.stringify({ app:'char-length-generator', version:'1.0', exportedAt:new Date().toISOString(), records:records }, null, 2), 'application/json');
+};
+$('#btnImportJson').onclick = function(){ $('#fileInput').click(); };
+$('#fileInput').onchange = function(){
+  var f = this.files && this.files[0];
+  if(!f) return;
+  var fr = new FileReader();
+  fr.onload = function(){
+    try{
+      var data = JSON.parse(fr.result);
+      var arr = Array.isArray(data) ? data : (data.records || []);
+      if(!Array.isArray(arr)) throw new Error('格式不对');
+      var exist = new Set(records.map(function(r){ return r.id; }));
+      var add = arr.filter(function(r){ return r && r.id && !exist.has(r.id); });
+      records = records.concat(add);
+      enforceLimit(); saveRecords(); renderUsage(); renderRecords();
+      toast('导入完成：新增 ' + add.length + ' 条（已跳过 ' + (arr.length - add.length) + ' 条重复）', 'ok');
+    }catch(e){
+      toast('导入失败：不是有效的 JSON 备份文件', 'bad');
+    }
+  };
+  fr.readAsText(f, 'utf-8');
+  this.value = '';
+};
+$('#btnClearAll').onclick = function(){
+  if(!confirm('确定清空全部 ' + records.length + ' 条记录？此操作不可恢复，建议先导出备份。')) return;
+  records = []; selected.clear();
+  saveRecords(); renderUsage(); renderRecords();
+  $('#backupInfo').textContent = '已清空';
+  toast('已清空全部记录','ok');
+};
+
+/* ============================================================
+   启动
+   ============================================================ */
+function boot(){
+  loadAll();
+  initCharsetOptions();
+  $('#fUnit').value = settings.unit;
+  $('#fType').value = 'N';
+  $('#fCharset').value = TYPE_DEFAULT_CHARSET[$('#fType').value] || settings.charset;
+  $('#fMode').value = TYPE_DEFAULT_MODE[$('#fType').value] || 'max';
+  $('#fAutoRecord').checked = !!settings.autoRecord;
+  $('#optGuard').checked = exportCfg.guard;
+  $('#optBom').checked = exportCfg.bom;
+  $('#optHeader').checked = exportCfg.header;
+  $('#optAudit').checked = exportCfg.audit;
+  $$('input[name="wash"]').forEach(function(r){ r.checked = (r.value === exportCfg.wash); });
+  pageSize = parseInt($('#qPageSize').value, 10) || 50;
+  $('#bUnit').value = settings.unit;
+  $('#btnDelBatch').style.display = 'none';
+  renderBatch();
+  renderUsage();
+  renderRecords();
+}
+boot();
+</script>
+</body>
+</html>
